@@ -101,8 +101,47 @@ void generateConfig() {
     trainsFile.close();
 }
 
+void conductTest(){
+    // Test parsing of intersections.txt and trains.txt
+    auto intersections = parseIntersections("intersections.txt");
+    auto trains = parseTrains("trains.txt", intersections);
+
+    // Test logging
+    // TODO: logging function for initialize intersections in server.cpp
+
+    // Test IPC setup
+    ipc_setup();
+
+        // Test request
+        msg_request sendMsg;
+        sendMsg.mtype = 1;
+        strcpy(sendMsg.content, "Test message from train");
+    
+        if (send_msg(requestQueueId, sendMsg) == -1) {
+            perror("send_msg");
+        } else {
+            std::cout << "Message sent to request queue.\n";
+        }
+    
+        // Test response
+        msg_request recvMsg;
+        if (receive_msg(requestQueueId, recvMsg, 1) == -1) {
+            perror("receive_msg");
+        } else {
+            std::cout << "Message received: " << recvMsg.content << std::endl;
+        }
+
+    // Test train forking
+    train_forking();
+}
+
 int main(){
+    // Conduct base system test
+    conductTest();
+
+    // Generate a random config
     generateConfig();
-    parsing();
+    conductTest();
+    
     return 0;
 }

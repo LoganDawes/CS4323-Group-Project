@@ -20,6 +20,8 @@ int requestQueueId = -1;
 int responseQueueId = -1;
 msg_request message;
 
+// TODO: initialize resource allocation graph and functions
+
 int ipc_setup() {
     key_t key_req = ftok(mq_request_key_path, 'R');
     key_t key_res = ftok(mq_response_key_path, 'S');
