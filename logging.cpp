@@ -52,7 +52,76 @@ using namespace std;
                   << intersectionLetter << " is locked. Train" << trainLetter << " added to wait queue." << std::endl;
     }
 
+
 //==========================================================================================
+
+	// INTERSECTION FULL LOG AKA other ADD TO WAIT QUEUE
+	void writeLog::logIntersectionFull(const std::string& trainLetter, const std::string& intersectionLetter) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] SERVER: Intersection"
+              	<< intersectionLetter << " is full. Train" << trainLetter << " added to wait queue." << std::endl;
+	}
+
+//==========================================================================================
+
+    // DEADLOCK DETECTION LOG
+    // NOTE: cycle is for what trains are at a deadlock. cycle Example: "Train1 ↔ Train3". This could also be changed to take both trains instead of a "cycle".
+	void writeLog::logDeadlockDetected(const std::string& cycle) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] SERVER: Deadlock detected! Cycle: " << cycle << "." << std::endl;
+	}
+
+
+//==========================================================================================
+
+	// RELEASE INTERSECTION
+	void writeLog::logRelease(const std::string& trainLetter, const std::string& intersectionLetter) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] TRAIN" << trainLetter
+              	<< ": Released Intersection" << intersectionLetter << "." << std::endl;
+	}
+
+//==========================================================================================
+
+	// DEADLOCK RESOLUTION LOG (PREEMPTION) AKA the other release
+	void writeLog::logPreemption(const std::string& trainLetter, const std::string& intersectionLetter) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] SERVER: Preempting Intersection"
+              << intersectionLetter << " from Train" << trainLetter << "." << std::endl;
+    	std::cout << "[" << timestamp << "] SERVER: Train" << trainLetter << " released Intersection"
+              << intersectionLetter << " forcibly." << std::endl;
+	}
+
+
+//==========================================================================================
+
+	// GRANT INTERSECTION AFTER PREEMPTION
+	void writeLog::logGrantAfterPreemption(const std::string& trainLetter, const std::string& intersectionLetter) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] SERVER: GRANTED Intersection"
+              	<< intersectionLetter << " to Train" << trainLetter << "." << std::endl;
+	}
+
+
+//==========================================================================================
+
+	// TRAIN PROCEEDING LOG
+	void writeLog::logProceeding(const std::string& trainLetter, const std::string& intersectionLetter) {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] TRAIN" << trainLetter
+              	<< ": Acquired Intersection" << intersectionLetter << ". Proceeding..." << std::endl;
+	}
+
+//==========================================================================================
+
+	// SIMULATION COMPLETE LOG
+	void writeLog::logSimulationComplete() {
+    	std::string timestamp = getCurrentTime();
+    	std::cout << "[" << timestamp << "] SIMULATION COMPLETE. All trains reached destinations." << std::endl;
+	}
+
+//==========================================================================================
+
 
     std::string writeLog::getCurrentTime() {
         using namespace std::chrono;
@@ -60,7 +129,7 @@ using namespace std;
         using std::chrono::microseconds;
 
 
-        //GET TIME
+    //GET TIME
         auto now = system_clock::now();
         auto duration = now.time_since_epoch();
         auto sec = duration_cast<seconds>(duration);
