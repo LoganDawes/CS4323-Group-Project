@@ -100,6 +100,7 @@ unordered_map<string, Intersection*> parseIntersections(const string& filename){
 }
 
 // Parse trains.txt into objects of type Train
+// TODO: Fix segmentation fault
 unordered_map<string, Train*> parseTrains(const string& filename, unordered_map<string, Intersection*>& intersections){
     ifstream file(filename);
     string line;

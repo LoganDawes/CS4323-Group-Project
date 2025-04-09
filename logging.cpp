@@ -12,6 +12,12 @@ Description: Reads requests and responses sent between server and trains to writ
 
 using namespace std;
 
+// TODO: combine logging events to one function (Granting, Waiting, Denying requests)
+
+// TODO: make a logging function called after parsing intersections and when every train has completed its route
+
+// TODO: rework each to take sim_time and convert to HH:MM:SS] timestamp
+
 //==========================================================================================
 // INITIAL LOG
     void writeLog::log(const std::string& source, const std::string& message) {

@@ -44,3 +44,5 @@ void train_forking() {
     std::cout << "All trains have completed their routes!" << std::endl;
     
     }
+
+    // TODO: make train_behavior() that simulates moving across route for each train, uses ipc communication between server and train

@@ -31,12 +31,16 @@ std::condition_variable cv;
 std::map<int, std::vector<int>> resourceGraph;
 
 int main() {
+    // TODO: move parsing and and intersection initilization logging here
+
     train_forking();
 
     std::cout << "Server started...\n";
     
+    // TODO: receive a resource allocation graph from ipc setup to use in communication between trains
     ipc_setup();
 
+    // TODO: put these in a loop to receive messages from trains, handle them, and send responses
     receive_msg(requestQueueId, message);
     send_msg(responseQueueId, message);
 
