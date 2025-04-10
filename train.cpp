@@ -7,6 +7,9 @@ Description:
 */
 
 #include "train.hpp"
+#include "logging.hpp"
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -44,5 +47,21 @@ void train_forking() {
     std::cout << "All trains have completed their routes!" << std::endl;
     
     }
+
+Train::Train(std::string name, std::vector<Intersection*> route)
+    : name(name), route(route), current_location(nullptr) {}
+
+void train_behavior(Train* train) {
+    for (Intersection* intersection : train->route) {
+        if (intersection->acquire(train)) {
+            log_event(train->name + ": Entered intersection " + intersection->name);
+            std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
+            intersection->release(train);
+            log_event(train->name + ": Left intersection " + intersection->name);
+        } else {
+            log_event(train->name + ": Could not enter intersection " + intersection->name);
+        }
+    }
+}
 
     // TODO: make train_behavior() that simulates moving across route for each train, uses ipc communication between server and train
