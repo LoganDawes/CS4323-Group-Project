@@ -63,5 +63,3 @@ void train_behavior(Train* train) {
         }
     }
 }
-
-    // TODO: make train_behavior() that simulates moving across route for each train, uses ipc communication between server and train
