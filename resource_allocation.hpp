@@ -19,3 +19,5 @@ class ResourceAllocationGraph{
     void release(id, Train);
     void printGraph();
 }
+
+#endif
