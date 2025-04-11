@@ -109,26 +109,29 @@ unordered_map<string, Train*> parseTrains(const string& filename, unordered_map<
     while(getline(file, line)) { // While there is a next line
         stringstream ss(line);
         string name;
+        getline(ss, name, ':');
+
         string intersection;
         vector<Intersection*> route;
 
-        getline(ss, name, ':');
-        // Adjusted to work for any number of intersections
         while(getline(ss, intersection, ',')){
-            route.push_back(intersections[intersection]);
-        ss >> intersection;
-        route.push_back(intersections[intersection]);
-
-        // Debugging parsing, remove in submission
-        cout << "Train: " << name << " | Route: ";
-        for (auto* intersection : route) {
-            cout << intersection->name << " ";
+            if(intersections.find(intersection) != intersections.end()){
+                route.push_back(intersections[intersection]);
+            } else {
+                cout <<"ERROR: intersection not found";
+            }
         }
-        cout << endl;
-        }
-
-        trains[name] = new Train(name, route);
     }
+
+    // Debugging parsing, remove in submission
+    cout << "Train: " << name << " | Route: ";
+    for (auto* intersection : route) {
+        cout << intersection->name << " ";
+    }
+    cout << endl;
+
+
+    trains[name] = new Train(name, route);
 
     return trains;
 }
