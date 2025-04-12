@@ -30,7 +30,7 @@ void train_forking() {
         pid_t pid = fork();
     
         if (pid == 0) {
-            std::cout << train->name << " starting its journey!" << std::endl;
+            std::cout << "train.cpp: " << train->name << " starting its journey!" << std::endl;
             exit(0);
         } else if (pid > 0){
             train_pids.push_back(pid); // To match trains' index
@@ -44,7 +44,7 @@ void train_forking() {
         wait(NULL);
     }
     
-    std::cout << "All trains have completed their routes!" << std::endl;
+    std::cout << "train.cpp: All trains have completed their routes!" << std::endl;
     
     }
 

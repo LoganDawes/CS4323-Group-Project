@@ -24,7 +24,7 @@ int main() {
 
     train_forking();
 
-    std::cout << "Server started...\n";
+    std::cout << "server.cpp: Server started...\n";
     
     // TODO: receive a resource allocation graph from ipc setup to use in communication between trains
     ipc_setup();
