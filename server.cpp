@@ -14,13 +14,13 @@ and efficiently.
 #include "logging.hpp"
 #include "ipc.hpp"
 #include "train.hpp"
+#include "deadlock_recovery.hpp"
 #include <iostream>
 #include <vector>
 #include <map>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-#include "deadlock_recovery.cpp"
 
 void handleRequest(int processID);
 bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph);

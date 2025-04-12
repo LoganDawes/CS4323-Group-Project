@@ -18,7 +18,7 @@ public:
     static void logRelease(const std::string& trainLetter, const std::string& intersectionLetter);
     static void logPreemption(const std::string& trainLetter, const std::string& intersectionLetter);
     static void logGrantAfterPreemption(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logProceeding(const std::string& trainLetter, const std::string& intersectionLetter)
+    static void logProceeding(const std::string& trainLetter, const std::string& intersectionLetter);
     static void logSimulationComplete();
 
 
