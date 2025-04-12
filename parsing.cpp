@@ -120,17 +120,17 @@ unordered_map<string, Train*> parseTrains(const string& filename, unordered_map<
                 cout <<"ERROR: intersection not found";
             }
         }
+        
+        // Debugging parsing, remove in submission
+        cout << "Train: " << name << " | Route: ";
+        for (auto *intersection : route)
+        {
+            cout << intersection->name << " ";
+        }
+        cout << endl;
+
+        trains[name] = new Train(name, route);
     }
-
-    // Debugging parsing, remove in submission
-    cout << "Train: " << name << " | Route: ";
-    for (auto* intersection : route) {
-        cout << intersection->name << " ";
-    }
-    cout << endl;
-
-
-    trains[name] = new Train(name, route);
 
     return trains;
 }

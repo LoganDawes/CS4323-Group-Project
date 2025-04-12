@@ -22,7 +22,7 @@ msg_request message;
 // TODO: initialize resource allocation graph and functions
 
 int ipc_setup() {
-    key_t key_mem = ftok(shm_key_path, "M");
+    key_t key_mem = ftok(shm_key_path, 'M');
     key_t key_req = ftok(mq_request_key_path, 'R');
     key_t key_res = ftok(mq_response_key_path, 'S');
 
@@ -31,10 +31,10 @@ int ipc_setup() {
         return -1;
     }
 
-    int shmid = shmget(key_mem, SHARED_MEMORY_SIZE, create ? IPC_CREAT | 0666 : 0666);
+    int shmid = shmget(key_mem, SHARED_MEMORY_SIZE, 0666 | IPC_CREAT);
     if (shmid == -1){
         perror("shmget");
-        return -1
+        return -1;
     }
 
     requestQueueId = msgget(key_req, 0666 | IPC_CREAT);
@@ -70,7 +70,11 @@ void ResourceAllocationGraph::printGraph()
     {
         const string &id = pair.first;
         Intersection *intersection = pair.second;
-        cout << id << is_mutex << capacity << lock_state << trains_in_intersection;
+        cout << id << intersection->name << intersection->is_mutex << intersection->capacity << intersection->lock_state;
+        for (Train* t : intersection->trains_in_intersection) {
+            cout << t->name << " ";
+        }
+        cout << endl;
     }
 }
 

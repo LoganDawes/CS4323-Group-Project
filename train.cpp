@@ -48,18 +48,25 @@ void train_forking() {
     
     }
 
-Train::Train(std::string name, std::vector<Intersection*> route)
-    : name(name), route(route), current_location(nullptr) {}
-
 void train_behavior(Train* train) {
+    writeLog logger;
+    
     for (Intersection* intersection : train->route) {
+        logger.logTrainRequest(train->name, intersection->name);
         if (intersection->acquire(train)) {
-            log_event(train->name + ": Entered intersection " + intersection->name);
+            logger.logGrant(train->name, intersection->name, "");
+            logger.logProceeding(train->name, intersection->name);
+
             std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
+
             intersection->release(train);
-            log_event(train->name + ": Left intersection " + intersection->name);
+            logger.logRelease(train->name, intersection->name);
         } else {
-            log_event(train->name + ": Could not enter intersection " + intersection->name);
+            if (intersection->is_mutex) {
+                logger.logLock(train->name, intersection->name);
+            } else {
+                logger.logIntersectionFull(train->name, intersection->name);
+            }
         }
     }
 }

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
+#include <string>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/shm.h>
@@ -12,8 +13,10 @@
 #include <sys/mman.h>
 #include <sys/msg.h>
 #include <iostream>
+#include <unordered_map>
+#include "parsing.hpp"
 
-#define shm_name "/shared_mem"
+#define shm_key_path "/tmp/ipc_shm"
 #define mq_request_key_path "/tmp/ipc_req"
 #define mq_response_key_path "/tmp/ipc_res"
 #define SHARED_MEMORY_SIZE sizeof(int)
@@ -32,8 +35,7 @@ struct msg_request {
 extern int requestQueueId;
 extern int responseQueueId;
 
-// Message struct
-extern msg_request message; 
+extern msg_request message;
 
 int ipc_setup();
 

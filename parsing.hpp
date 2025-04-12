@@ -21,6 +21,7 @@ public:
     std::string name;
     unsigned int capacity;
     bool is_mutex;
+    bool lock_state;
     unsigned int train_count;
 
     pthread_mutex_t mtx;
