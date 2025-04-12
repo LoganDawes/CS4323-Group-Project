@@ -1,5 +1,5 @@
 /*
-Group B
+Group: B
 Author: Gavin Zlatar
 Email: gavin.zlatar@okstate.edu
 Date: 4/5/2025
@@ -72,7 +72,6 @@ void handleRequest(int processID) {
 
 
 bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph) {
-    // resource allocation graph for deadlock
     std::map<int, bool> visited, recursionStack;
 
     for (const auto& node : resourceGraph) {
@@ -83,13 +82,27 @@ bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph) {
     for (const auto& node : resourceGraph) {
         int processID = node.first;
         if (!visited[processID]) {
-            // placeholder for cycle detection:
-
-
-            bool cycleFound = false; // TO DO: replace with actual algorithm
-            if (cycleFound) return true;
+            if (isCyclicUtil(processID, visited, recursionStack, resourceGraph)) {
+                return true;
+            }
         }
     }
 
+    return false;
+}
+
+bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, std::vector<int>>& graph) {
+    visited[node] = true;
+    recursionStack[node] = true;
+
+    for (int neighbor : graph.at(node)) {
+        if (!visited[neighbor] && isCyclicUtil(neighbor, visited, recursionStack, graph)) {
+            return true;
+        } else if (recursionStack[neighbor]) {
+            return true;
+        }
+    }
+
+    recursionStack[node] = false;
     return false;
 }
