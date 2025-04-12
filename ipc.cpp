@@ -2,7 +2,7 @@
 Group B
 Author: Richard Powers
 Email: richard.w.powers@okstate.edu
-Date: 4/1/2025
+Date: 4/12/2025
 
 Description: 
 */
@@ -14,7 +14,6 @@ Description:
 // Store the mutexes and semaphores, set the values to match specified capacities
 
 #include "ipc.hpp"
-#include <iostream>
 
 int requestQueueId = -1;
 int responseQueueId = -1;
@@ -49,30 +48,30 @@ int ipc_setup() {
     return 0;
 }
 
-class ResourceAllocationGraph {
-    private:
-        unordered_map<string, Intersection*> intersectionMap;
-    
-    public:
-        void acquire(const string& id, Train* train) {
-            if (intersectionMap.count(id)) {
-                intersectionMap[id]->acquire(train);
-            }
-        }
+void ResourceAllocationGraph::acquire(const string &id, Train *train)
+{
+    if (intersectionMap.count(id))
+    {
+        intersectionMap[id]->acquire(train);
+    }
+}
 
-        void release(const string& id, Train* train) {
-            if (intersectionMap.count(id)) {
-                intersectionMap[id]->release(train);
-            }
-        }
+void ResourceAllocationGraph::release(const string &id, Train *train)
+{
+    if (intersectionMap.count(id))
+    {
+        intersectionMap[id]->release(train);
+    }
+}
 
-        void printGraph() {
-            for (const auto& pair : intersectionMap) {
-                const string& id = pair.first;
-                Intersection* intersection = pair.second;
-                cout << id << is_mutex << capacity << lock_state << trains_in_intersection;
-            }
-        }
+void ResourceAllocationGraph::printGraph()
+{
+    for (const auto &pair : intersectionMap)
+    {
+        const string &id = pair.first;
+        Intersection *intersection = pair.second;
+        cout << id << is_mutex << capacity << lock_state << trains_in_intersection;
+    }
 }
 
 int send_msg(int msgid, const msg_request& msg) {

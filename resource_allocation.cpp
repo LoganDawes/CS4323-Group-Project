@@ -2,7 +2,7 @@
 Group B
 Author: Evelyn Wilson
 Email: evelyn.wilson@okstate.edu
-Date: April 11, 2025
+Date: 4/12/2025
 
 Description: This code creates a resource allocation graph for use in deadlock detection and handling requests
 */

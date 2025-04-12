@@ -2,7 +2,7 @@
 Group: B
 Author: Gavin Zlatar
 Email: gavin.zlatar@okstate.edu
-Date: 4/5/2025
+Date: 4/12/2025
 
 Description: The 'server.cpp' file creates a multithreaded server that processes requests from child processes while
 checking for deadlocks. Threads handle requests and update a resource graph, which tracks resource dependencies. 
@@ -10,26 +10,14 @@ The program uses this graph to detect deadlocks by looking for cycles. If a dead
 otherwise, it confirms everything is running smoothly. Mutexes and condition variables ensure threads work safely 
 and efficiently.
 */
-#include "parsing.hpp"
-#include "logging.hpp"
-#include "ipc.hpp"
-#include "train.hpp"
-#include "deadlock_recovery.hpp"
-#include <iostream>
-#include <vector>
-#include <map>
-#include <mutex>
-#include <thread>
-#include <condition_variable>
 
-void handleRequest(int processID);
-bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph);
+#include "server.hpp"
 
 std::mutex mtx;
 std::condition_variable cv;
 
 // simulated resource graph for detecting deadlocks
-std::map<int, std::vector<int>> resourceGraph;
+ResourceAllocationGraph resourceGraph;
 
 int main() {
     // TODO: move parsing and and intersection initilization logging here
@@ -45,6 +33,9 @@ int main() {
     receive_msg(requestQueueId, message);
     send_msg(responseQueueId, message);
 
+    resourceGraph.printGraph();
+
+    /* TEMPORARY COMMENT OUT: NEEDS TO BE INTEGRATED WITH RESOURCE ALLOCATION GRAPH --------------------------------
     // deadlock detection statement
     if (detectDeadlock(resourceGraph)) {
         std::cout << "Deadlock detected! Handing over to the recovery module...\n";
@@ -60,14 +51,15 @@ int main() {
                 std::vector<std::string>(entry.second.begin(), entry.second.end());
         }
     
-        deadlockRecovery(trains, intersections, resourceTable);
+        //deadlockRecovery(trains, intersections, resourceTable);
     }
+    --------------------------------------------------------------------------------------------------------------*/
 }
 
+/* TEMPORARY COMMENT OUT: NEEDS TO BE INTEGRATED WITH RESOURCE ALLOCATION GRAPH --------------------------------
 void handleRequest(int processID) {
     std::unique_lock<std::mutex> lock(mtx);
 
-    
     std::cout << "Handling request from Process " << processID << "\n";
     // simulate resource request (add to resource graph)
     resourceGraph[processID] = {processID + 1}; // xxample dependency
@@ -76,7 +68,7 @@ void handleRequest(int processID) {
 }
 
 
-bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph) {
+bool detectDeadlock(const std::map<int, ResourceAllocationGraph& resourceGraph) {
     std::map<int, bool> visited, recursionStack;
 
     for (const auto& node : resourceGraph) {
@@ -96,7 +88,7 @@ bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph) {
     return false;
 }
 
-bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, std::vector<int>>& graph) {
+bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, ResourceAllocationGraph& graph) {
     visited[node] = true;
     recursionStack[node] = true;
 
@@ -111,3 +103,4 @@ bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& r
     recursionStack[node] = false;
     return false;
 }
+--------------------------------------------------------------------------------------------------------------*/

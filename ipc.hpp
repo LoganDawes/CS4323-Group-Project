@@ -11,12 +11,15 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/msg.h>
+#include <iostream>
 
 #define shm_name "/shared_mem"
 #define mq_request_key_path "/tmp/ipc_req"
 #define mq_response_key_path "/tmp/ipc_res"
 #define SHARED_MEMORY_SIZE sizeof(int)
 #define MSG_TYPE_DEFAULT 1
+
+using namespace std;
 
 struct msg_request {
     long mtype;
@@ -33,6 +36,18 @@ extern int responseQueueId;
 extern msg_request message; 
 
 int ipc_setup();
+
+class ResourceAllocationGraph {
+    private:
+        unordered_map<string, Intersection*> intersectionMap;
+    
+    public:
+        void acquire(const string& id, Train* train);
+
+        void release(const string& id, Train* train);
+
+        void printGraph();
+};
 
 int send_msg(int msgid,const msg_request& msg);
 int receive_msg(int msgid, msg_request& msg, long mtype = MSG_TYPE_DEFAULT);

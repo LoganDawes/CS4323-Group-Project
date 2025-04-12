@@ -2,7 +2,7 @@
 Group B
 Author: Evelyn Wilson
 Email: evelyn.wilson@okstate.edu
-Date: April 2, 2025
+Date: 4/12/2025
 
 Description: This code reads the intersections and trains from their respective text files into objects.
 It also defines the basic methods

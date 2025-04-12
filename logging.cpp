@@ -2,7 +2,7 @@
 Group B
 Author: Caden Blust
 Email: caden.blust@okstate.edu
-Date: 4/5
+Date: 4/12/2025
 
 Description: Reads requests and responses sent between server and trains to write to a simulation.log file.
              Keeps track of simulated time and deadlock resolution steps.
