@@ -20,6 +20,7 @@ and efficiently.
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include "deadlock_recovery.cpp"
 
 void handleRequest(int processID);
 bool detectDeadlock(const std::map<int, std::vector<int>>& resourceGraph);
@@ -46,17 +47,21 @@ int main() {
 
     // deadlock detection statement
     if (detectDeadlock(resourceGraph)) {
-        std::cout << "Deadlock detected! Resolving...\n";
-        // TO DO: implement deadlock resolution logic here
+        std::cout << "Deadlock detected! Handing over to the recovery module...\n";
 
+        // pass necessary data structures to deadlockRecovery
 
-
-    } else {
-        std::cout << "No deadlock detected. System running smoothly.\n";
+        std::map<std::string, Train*> trains; // PLACEHOLDER for actual data for data provided by testing
+        std::unordered_map<std::string, Intersection*> intersections; // PLACEHOLDER for intersections for data provided by testing
+    
+        std::map<std::string, std::vector<std::string>> resourceTable;
+        for (const auto& entry : resourceGraph) {
+            resourceTable[std::to_string(entry.first)] = 
+                std::vector<std::string>(entry.second.begin(), entry.second.end());
+        }
+    
+        deadlockRecovery(trains, intersections, resourceTable);
     }
-
-    std::cout << "Server shutting down...\n";
-    return 0;
 }
 
 void handleRequest(int processID) {
