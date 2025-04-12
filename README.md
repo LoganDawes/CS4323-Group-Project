@@ -9,6 +9,10 @@ Compiling the programs:
 4. Running the program:
 ./server
 
+For various test cases, run:
+./testcompile.sh
+./test
+
 Tested on CSX server:
 csx1.cs.okstate.edu
 

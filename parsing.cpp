@@ -91,7 +91,7 @@ unordered_map<string, Intersection*> parseIntersections(const string& filename){
         ss >> capacity;
 
         // Debugging parsing, remove in submission
-        cout << "Name : " << name << " , Capacity: " << capacity << endl;
+        cout << "parsing.cpp: Name : " << name << " , Capacity: " << capacity << endl;
         
         intersections[name] = new Intersection(name, capacity);
     }
@@ -117,12 +117,13 @@ unordered_map<string, Train*> parseTrains(const string& filename, unordered_map<
             if(intersections.find(intersection) != intersections.end()){
                 route.push_back(intersections[intersection]);
             } else {
-                cout <<"ERROR: intersection not found";
+                cout <<"parsing.cpp: ERROR: intersection not found: " << intersection << endl;
+                cout << endl;
             }
         }
         
         // Debugging parsing, remove in submission
-        cout << "Train: " << name << " | Route: ";
+        cout << "parsing.cpp: Train: " << name << " | Route: ";
         for (auto *intersection : route)
         {
             cout << intersection->name << " ";

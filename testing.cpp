@@ -20,6 +20,14 @@ Description: Performs various tests on each unit, then a system test.
 #include "logging.hpp"
 #include "ipc.hpp"
 #include "train.hpp"
+#include "deadlock_recovery.hpp"
+#include "testserver.hpp"
+
+// Generate a 1-10 intersections
+int numIntersections;
+
+// Generate a 1-10 trains
+int numTrains;
 
 // Generates a random initialization of intersections.txt and trains.txt for automated testing.
 void generateConfig() {
@@ -29,9 +37,8 @@ void generateConfig() {
     // Random Seed
     std::srand(std::time(0));
 
-    // Generate a 1-10 intersections
-    int numIntersections = (std::rand() % 10) + 1;
-    printf("Number of intersections: %d\n", numIntersections);
+    numIntersections = (std::rand() % 10) + 1;
+    printf("testing.cpp: Number of intersections: %d\n", numIntersections);
 
     // Vector for intersections
     std::vector<std::string> intersections;
@@ -39,7 +46,7 @@ void generateConfig() {
     for (int i = 0; i < numIntersections; ++i) {
         // Generate 1-3 capacity per intersection
         int capacity = (std::rand() % 3) + 1;
-        printf("Intersection %d capacity: %d\n", i, capacity);
+        printf("testing.cpp: Intersection %d capacity: %d\n", i, capacity);
 
         // Set intersection number as alphabetical
         char alpha = 'A' + i;
@@ -59,9 +66,8 @@ void generateConfig() {
     // Random Seed
     std::srand(std::time(0));
 
-    // Generate a 1-10 trains
-    int numTrains = (std::rand() % 10) + 1;
-    printf("Number of trains: %d\n", numTrains);
+    numTrains = (std::rand() % 10) + 1;
+    printf("testing.cpp: Number of trains: %d\n", numTrains);
 
     for (int i = 0; i < numTrains; ++i) {
         // Generate random intersection number for route
@@ -71,7 +77,7 @@ void generateConfig() {
         std::set<std::string> route;
 
         // Write to file
-        trainsFile << "Train" << i+1 << ':';
+        trainsFile << "testing.cpp: Train" << i+1 << ':';
 
         // Generate Route
         for (int j = 0; j < numRouteIntersections; ++j) {
@@ -101,47 +107,57 @@ void generateConfig() {
     trainsFile.close();
 }
 
-void conductTest(){
-    // Test parsing of intersections.txt and trains.txt
-    auto intersections = parseIntersections("intersections.txt");
-    auto trains = parseTrains("trains.txt", intersections);
+void parsing_test(){
+    // Parse files
+    auto intersections = parseIntersections("test_intersections.txt");
+    auto trains = parseTrains("test_trains.txt", intersections);
 
-    // Test logging
-    // TODO: logging function for initialize intersections in server.cpp
+    if(intersections.size() == numIntersections){
+        std::cout << "testing.cpp: Parsed intersections successfully." << std::endl;
+    } else {
+        std::cerr << "testing.cpp: Failed to parse intersections." << std::endl;
+    }
+    if(trains.size() == numTrains){
+        std::cout << "testing.cpp: Parsed trains successfully." << std::endl;
+    } else {
+        std::cerr << "testing.cpp: Failed to parse trains." << std::endl;
+    }
+}
 
-    // Test IPC setup
-    ipc_setup();
+void ipc_test(){
+    //NYI
+}
 
-        // Test request
-        msg_request sendMsg;
-        sendMsg.mtype = 1;
-        strcpy(sendMsg.content, "Test message from train");
-    
-        if (send_msg(requestQueueId, sendMsg) == -1) {
-            perror("send_msg");
-        } else {
-            std::cout << "Message sent to request queue.\n";
-        }
-    
-        // Test response
-        msg_request recvMsg;
-        if (receive_msg(requestQueueId, recvMsg, 1) == -1) {
-            perror("receive_msg");
-        } else {
-            std::cout << "Message received: " << recvMsg.content << std::endl;
-        }
+void train_test(){
+    //NYI
+}
 
-    // Test train forking
-    train_forking();
+void deadlock_recovery_test(){
+    //NYI
+}
+
+void logging_test(){
+    //NYI
 }
 
 int main(){
-    // Conduct base system test
-    conductTest();
+    // Conduct parsing test
+    parsing_test();
 
-    // Generate a random config
+    // Conduct base system test
+    if (server())
+    {
+        std::cerr << "Server encountered error." << std::endl;
+        return 1;
+    }
+
+    // Generate a random config system test
     generateConfig();
-    conductTest();
+    if (server())
+    {
+        std::cerr << "Server encountered error." << std::endl;
+        return 1;
+    }
     
     return 0;
 }
