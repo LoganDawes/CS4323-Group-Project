@@ -47,7 +47,7 @@ int ipc_setup() {
 
     return 0;
 }
-
+/*
 void ResourceAllocationGraph::acquire(const string &id, Train *train)
 {
     if (intersectionMap.count(id))
@@ -77,7 +77,7 @@ void ResourceAllocationGraph::printGraph()
         cout << endl;
     }
 }
-
+*/
 int send_msg(int msgid, const msg_request& msg) {
     return msgsnd(msgid, &msg, sizeof(msg_request) - sizeof(long), 0);
 }

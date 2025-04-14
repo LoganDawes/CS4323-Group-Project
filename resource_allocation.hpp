@@ -13,13 +13,20 @@
 #include <pthread.h>
 #include <condition_variable>
 #include <algorithm>
+#include "parsing.hpp"
+
+using namespace std;
 
 class ResourceAllocationGraph{
+    private:
+    std::unordered_map<std::string, Intersection *> intersectionMap;
+
+    public:
     void addIntersection(Intersection* inter);
-    void acquire(const string& intersectionName, Train* train);
-    void release(const string& intersectionName, Train* train);
+    bool acquire(const string& intersectionName, Train* train);
+    bool release(const string& intersectionName, Train* train);
     void printGraph();
     unordered_map<string, vector<string>> getResourceTable();
-}
+};
 
 #endif

@@ -11,7 +11,7 @@ otherwise, it confirms everything is running smoothly. Mutexes and condition var
 and efficiently.
 */
 
-#include "testserver.hpp"
+#include "server.hpp"
 
 std::mutex mtx;
 std::condition_variable cv;
@@ -20,7 +20,12 @@ std::condition_variable cv;
 ResourceAllocationGraph resourceGraph;
 
 int server() {
-    // TODO: move parsing and and intersection initilization logging here
+    auto intersections = parseIntersections("intersections.txt");
+    auto trains = parseTrains("trains.txt", intersections);
+
+    for (auto& [name, inter] : intersections) {
+        resourceGraph.addIntersection(inter);
+    }
 
     train_forking();
 
@@ -29,13 +34,37 @@ int server() {
     // TODO: receive a resource allocation graph from ipc setup to use in communication between trains
     ipc_setup();
 
-    // TODO: put these in a loop to receive messages from trains, handle them, and send responses
-    receive_msg(requestQueueId, message);
-    send_msg(responseQueueId, message);
+    while (true) {
+        receive_msg(requestQueueId, message);
+        
+        string trainName = message.train_name;
+        string intersection = message.intersection;
+        Train* train = trains[trainName];
+    
+        if (strcmp(message.command, "ACQUIRE") == 0) {
+            bool success = resourceGraph.acquire(intersection, train);
+            if (success) {
+                writeLog::logGrant(trainName, intersection);
+                strcpy(message.command, "GRANT");
+            } else {
+                writeLog::logLock(trainName, intersection);
+                strcpy(message.command, "WAIT");
+            }
+        } else if (strcmp(message.command, "RELEASE") == 0) {
+            bool success = resourceGraph.release(intersection, train);
+            if (success) {
+                writeLog::logRelease(trainName, intersection);
+                strcpy(message.command, "RELEASED");
+            } else {
+                writeLog::log("SERVER", "Invalid release request.");
+                strcpy(message.command, "DENY");
+            }
+        }
+    
+        send_msg(responseQueueId, message);
+    }    
 
     resourceGraph.printGraph();
-
-    return 0;
 
     /* TEMPORARY COMMENT OUT: NEEDS TO BE INTEGRATED WITH RESOURCE ALLOCATION GRAPH --------------------------------
     // deadlock detection statement

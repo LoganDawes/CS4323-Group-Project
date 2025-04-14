@@ -27,7 +27,7 @@ using namespace std;
 struct msg_request {
     long mtype;
     char command[10];
-    int train_name[20];
+    char train_name[20];
     char intersection[50];
 };
 
@@ -38,7 +38,7 @@ extern int responseQueueId;
 extern msg_request message;
 
 int ipc_setup();
-
+/*
 class ResourceAllocationGraph {
     private:
         unordered_map<string, Intersection*> intersectionMap;
@@ -50,7 +50,7 @@ class ResourceAllocationGraph {
 
         void printGraph();
 };
-
+*/
 int send_msg(int msgid,const msg_request& msg);
 int receive_msg(int msgid, msg_request& msg, long mtype = MSG_TYPE_DEFAULT);
 

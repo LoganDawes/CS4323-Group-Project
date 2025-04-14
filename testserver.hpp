@@ -6,6 +6,7 @@
 #include "ipc.hpp"
 #include "train.hpp"
 #include "deadlock_recovery.hpp"
+#include "resource_allocation.hpp"
 #include <iostream>
 #include <vector>
 #include <map>

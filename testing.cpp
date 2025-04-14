@@ -16,11 +16,6 @@ Description: Performs various tests on each unit, then a system test.
 #include <set>
 #include <cstring>
 
-#include "parsing.hpp"
-#include "logging.hpp"
-#include "ipc.hpp"
-#include "train.hpp"
-#include "deadlock_recovery.hpp"
 #include "testserver.hpp"
 
 // Generate a 1-10 intersections
