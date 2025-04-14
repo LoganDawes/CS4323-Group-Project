@@ -11,22 +11,42 @@ Description: This code creates a resource allocation graph for use in deadlock d
 
 using namespace std;
 
-// This should be called from server when ACQUIRE or RELEASE messages come through
 class ResourceAllocationGraph{
+    // Populate the graph with pointers to the existing Intersection objects:
     unordered_map<string, Intersection*> intersectionMap
-    
-    // TODO: change from id implementation to actual intersection name
-    void acquire(Intersection, Train){
-        intersectionMap[id]->acquire(Train)
+    void addIntersection(Intersection* intersection) {
+        intersectionMap[intersection->name] = intersection;
     }
     
-    void release(Intersection, Train){
-        intersectionMap[id]->release(Train)
+    bool acquire(const string& intersectionName, Train* train){
+        intersectionMap[intersectionName]->acquire(Train);
     }
     
-    void printGraph(){
-        for (intersectionMap){
-            cout << id << is_mutex << capacity << lock_state << trains_in_intersection
+    void release(const string& intersectionName, Train* train){
+        intersectionMap[intersectionName]->release(Train);
+    }
+    
+    void printGraph() {
+        for (const auto& pair : intersectionMap) {
+            const Intersection* inter = pair.second;
+            cout << inter->name << " | " << (inter->is_mutex ? "Mutex" : "Semaphore")
+                 << " | " << inter->capacity << " | Held by: ";
+            for (const auto& train : inter->trains_in_intersection) {
+                cout << train->name << " ";
+            }
+            cout << endl;
         }
     }
-}
+
+    unordered_map<string, vector<string>> getResourceTable() {
+        unordered_map<string, vector<string>> table;
+        for (const auto& pair : intersectionMap) {
+            vector<string> trains;
+            for (Train* train : pair.second->trains_in_intersection) {
+                trains.push_back(train->name);
+            }
+            table[pair.first] = trains;
+        }
+        return table;
+    }
+};    

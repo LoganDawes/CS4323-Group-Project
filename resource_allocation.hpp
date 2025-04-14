@@ -15,9 +15,11 @@
 #include <algorithm>
 
 class ResourceAllocationGraph{
-    void acquire(id, Train);
-    void release(id, Train);
+    void addIntersection(Intersection* inter);
+    void acquire(const string& intersectionName, Train* train);
+    void release(const string& intersectionName, Train* train);
     void printGraph();
+    unordered_map<string, vector<string>> getResourceTable();
 }
 
 #endif
