@@ -10,6 +10,10 @@ Description:
 #include "logging.hpp"
 #include <thread>
 #include <chrono>
+#include "ipc.hpp"
+#include "logging.hpp"
+#include <cstring>
+
 
 using namespace std;
 
@@ -31,6 +35,7 @@ void train_forking() {
     
         if (pid == 0) {
             std::cout << "train.cpp: " << train->name << " starting its journey!" << std::endl;
+            train_behavior(train);
             exit(0);
         } else if (pid > 0){
             train_pids.push_back(pid); // To match trains' index
@@ -52,21 +57,38 @@ void train_behavior(Train* train) {
     writeLog logger;
     
     for (Intersection* intersection : train->route) {
+        msg_request msg;
+        msg.mtype = MSG_TYPE_DEFAULT;
+        strcpy(msg.command, "ACQUIRE");
+        strcpy(msg.train_name, train->name.c_str());
+        strcpy(msg.intersection, intersection->name.c_str());
+
         logger.logTrainRequest(train->name, intersection->name);
-        if (intersection->acquire(train)) {
+        send_msg(requestQueueId, msg);
+        receive_msg(responseQueueId, msg);
+
+        if(strcmp(msg.command, "GRANT") == 0) { // If the server sends back a GRANT signal
             logger.logGrant(train->name, intersection->name, "");
             logger.logProceeding(train->name, intersection->name);
 
             std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
 
-            intersection->release(train);
-            logger.logRelease(train->name, intersection->name);
-        } else {
-            if (intersection->is_mutex) {
-                logger.logLock(train->name, intersection->name);
-            } else {
-                logger.logIntersectionFull(train->name, intersection->name);
+            // Release (only done if the intersection is granted and after delays)
+            strcpy(msg.command, "RELEASE");
+            send_msg(requestQueueId, msg);
+            
+            receive_msg(responseQueueId, msg);
+            if(strcmp(msg.command, "RELEASED") == 0) {
+                logger.logRelease(train->name, intersection->name);
             }
+        } else if (strcmp(msg.command, "WAIT") == 0){ // If the server sends back a WAIT signal
+            logger.logIntersectionFull(train->name, intersection->name);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Maybe adjust this?
+        } else if (strcmp(msg.command, "DENY") == 0){
+            logger.logLock(train->name, intersection->name);
         }
+        // This is to create a delay before the train tries again
+        // Depending on testing, we may remove this I just thought it would be good in the place of deadlock prevention - Evelyn
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
