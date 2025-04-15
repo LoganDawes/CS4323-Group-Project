@@ -41,6 +41,9 @@ Main entry point to the program, calls parsing and train forking before switchin
 ### ipc.cpp
 Configures shared memory segments that store mutexes and semaphores, then manages message queues that serve as a channel between server and trains.
 
+## resource_allocation.cpp
+Defines the resource allocation table class to keep a map of intersections.
+
 ### deadlock_recovery.cpp
 Called by server if a deadlock is detected, is responsible for resolving the deadlock for the program to restore system flow.
 
