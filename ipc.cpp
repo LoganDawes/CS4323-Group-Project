@@ -22,6 +22,10 @@ msg_request message;
 // TODO: initialize resource allocation graph and functions
 
 int ipc_setup() {
+    std::ofstream(shm_key_path).close();
+    std::ofstream(mq_request_key_path).close();
+    std::ofstream(mq_response_key_path).close();
+
     key_t key_mem = ftok(shm_key_path, 'M');
     key_t key_req = ftok(mq_request_key_path, 'R');
     key_t key_res = ftok(mq_response_key_path, 'S');
@@ -47,37 +51,7 @@ int ipc_setup() {
 
     return 0;
 }
-/*
-void ResourceAllocationGraph::acquire(const string &id, Train *train)
-{
-    if (intersectionMap.count(id))
-    {
-        intersectionMap[id]->acquire(train);
-    }
-}
 
-void ResourceAllocationGraph::release(const string &id, Train *train)
-{
-    if (intersectionMap.count(id))
-    {
-        intersectionMap[id]->release(train);
-    }
-}
-
-void ResourceAllocationGraph::printGraph()
-{
-    for (const auto &pair : intersectionMap)
-    {
-        const string &id = pair.first;
-        Intersection *intersection = pair.second;
-        cout << id << intersection->name << intersection->is_mutex << intersection->capacity << intersection->lock_state;
-        for (Train* t : intersection->trains_in_intersection) {
-            cout << t->name << " ";
-        }
-        cout << endl;
-    }
-}
-*/
 int send_msg(int msgid, const msg_request& msg) {
     return msgsnd(msgid, &msg, sizeof(msg_request) - sizeof(long), 0);
 }
