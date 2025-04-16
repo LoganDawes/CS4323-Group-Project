@@ -24,7 +24,8 @@ int numIntersections;
 // Generate a 1-10 trains
 int numTrains;
 
-void generateBaseConfig() {
+void generateBaseConfig()
+{
     // Write static intersections
     std::ofstream intersectionsFile("intersections.txt");
     intersectionsFile << "IntersectionA:1\n";
@@ -47,7 +48,8 @@ void generateBaseConfig() {
 }
 
 // Generates a random initialization of intersections.txt and trains.txt for automated testing.
-void generateConfig() {
+void generateConfig()
+{
     // File: intersections.txt
     std::ofstream intersectionsFile("intersections.txt");
 
@@ -61,7 +63,8 @@ void generateConfig() {
     // Vector for intersections
     std::vector<std::string> intersections;
 
-    for (int i = 0; i < numIntersections; ++i) {
+    for (int i = 0; i < numIntersections; ++i)
+    {
         // Generate 1-3 capacity per intersection
         int capacity = (std::rand() % 3) + 1;
         printf("testing.cpp: Intersection %d capacity: %d\n", i, capacity);
@@ -88,7 +91,8 @@ void generateConfig() {
 
     printf("testing.cpp: Number of trains: %d\n", numTrains);
 
-    for (int i = 0; i < numTrains; ++i) {
+    for (int i = 0; i < numTrains; ++i)
+    {
         // Generate random intersection number for route
         int numRouteIntersections = (std::rand() % numIntersections) + 1;
 
@@ -96,12 +100,14 @@ void generateConfig() {
         std::set<std::string> route;
 
         // Write to file
-        trainsFile << "Train" << i+1 << ':';
+        trainsFile << "Train" << i + 1 << ':';
 
         // Generate Route
-        for (int j = 0; j < numRouteIntersections; ++j) {
+        for (int j = 0; j < numRouteIntersections; ++j)
+        {
             std::string selectedIntersection;
-            do {
+            do
+            {
                 // Aquire random intersection index to select intersection
                 int intersectionIndex = std::rand() % numIntersections;
                 selectedIntersection = intersections[intersectionIndex];
@@ -114,7 +120,8 @@ void generateConfig() {
             printf("testing.cpp: Train %d route intersection: %s\n", i, selectedIntersection.c_str());
 
             // Comma seperated entries
-            if (j != 0) {
+            if (j != 0)
+            {
                 trainsFile << ",";
             }
 
@@ -122,34 +129,44 @@ void generateConfig() {
             trainsFile << selectedIntersection;
         }
         trainsFile << std::endl;
-
     }
     trainsFile.close();
 }
 
-void parsing_test(){
+void parsing_test()
+{
     // Parse files
     auto intersections = parseIntersections("intersections.txt");
     auto trains = parseTrains("trains.txt", intersections);
 
-    if(intersections.size() == numIntersections){
+    if (intersections.size() == numIntersections)
+    {
         std::cout << "testing.cpp: Parsed intersections successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Failed to parse intersections." << std::endl;
     }
-    if(trains.size() == numTrains){
+    if (trains.size() == numTrains)
+    {
         std::cout << "testing.cpp: Parsed trains successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Failed to parse trains." << std::endl;
     }
 }
 
-void ipc_test() {
+void ipc_test()
+{
     // Setup IPC
     int result = ipc_setup();
-    if (result == 0) {
+    if (result == 0)
+    {
         std::cout << "testing.cpp: IPC setup successful." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: IPC setup failed." << std::endl;
         return;
     }
@@ -159,15 +176,19 @@ void ipc_test() {
     testMsg.mtype = MSG_TYPE_DEFAULT;
     strcpy(testMsg.command, "TEST");
     strcpy(testMsg.intersection, "IntersectionA");
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 20; ++i)
+    {
         testMsg.train_name[i] = i;
     }
 
     // Send the message
     int sendResult = send_msg(requestQueueId, testMsg);
-    if (sendResult == 0) {
+    if (sendResult == 0)
+    {
         std::cout << "testing.cpp: Message sent successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Failed to send message." << std::endl;
         return;
     }
@@ -175,54 +196,175 @@ void ipc_test() {
     // Receive the message
     msg_request receivedMsg;
     int recvResult = receive_msg(requestQueueId, receivedMsg);
-    if (recvResult != -1) {
+    if (recvResult != -1)
+    {
         std::cout << "testing.cpp: Message received successfully." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Failed to receive message." << std::endl;
         return;
     }
 
     // Validate message content
-    if (strcmp(receivedMsg.command, "TEST") == 0) {
+    if (strcmp(receivedMsg.command, "TEST") == 0)
+    {
         std::cout << "testing.cpp: Command in response matches." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Command in response does not match." << std::endl;
     }
 
-    if (strcmp(receivedMsg.intersection, "IntersectionA") == 0) {
+    if (strcmp(receivedMsg.intersection, "IntersectionA") == 0)
+    {
         std::cout << "testing.cpp: Intersection in response matches." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Intersection in response does not match." << std::endl;
     }
 
     // Validate train names in response
     bool trainNamesMatch = true;
-    for (int i = 0; i < 20; ++i) {
-        if (receivedMsg.train_name[i] != i) {
+    for (int i = 0; i < 20; ++i)
+    {
+        if (receivedMsg.train_name[i] != i)
+        {
             trainNamesMatch = false;
             break;
         }
     }
-    if (trainNamesMatch) {
+    if (trainNamesMatch)
+    {
         std::cout << "testing.cpp: Train name array matches." << std::endl;
-    } else {
+    }
+    else
+    {
         std::cerr << "testing.cpp: Train name array does not match." << std::endl;
     }
 }
 
-void train_test() {
+void allocation_table_test()
+{
+    std::cout << "testing.cpp: Starting allocation table test..." << std::endl;
+
+    // Create ResourceAllocationGraph
+    ResourceAllocationGraph resourceGraph;
+
+    // Create test intersections
+    Intersection intersectionA("IntersectionA", 1); // Mutex
+    Intersection intersectionB("IntersectionB", 2); // Semaphore
+
+    // Add intersections to the graph
+    resourceGraph.addIntersection(&intersectionA);
+    resourceGraph.addIntersection(&intersectionB);
+
+    // Create test trains
+    std::vector<Intersection *> emptyRoute;
+    Train train1("Train1", emptyRoute);
+    Train train2("Train2", emptyRoute);
+
+    // Acquire intersections
+    resourceGraph.acquire("IntersectionA", &train1);
+    resourceGraph.acquire("IntersectionB", &train1);
+    resourceGraph.acquire("IntersectionB", &train2);
+
+    // Get resource table
+    auto resourceTable = resourceGraph.getResourceTable();
+
+    // Validate IntersectionA, mutex with 1 train
+    if (resourceTable["IntersectionA"].size() == 1 && resourceTable["IntersectionA"][0] == "Train1")
+    {
+        std::cout << "testing.cpp: IntersectionA allocation validated." << std::endl;
+    }
+    else
+    {
+        std::cerr << "testing.cpp: IntersectionA allocation failed." << std::endl;
+    }
+
+    // Validate IntersectionB, semaphore with 2 trains
+    if (resourceTable["IntersectionB"].size() == 2 &&
+        resourceTable["IntersectionB"][0] == "Train1" &&
+        resourceTable["IntersectionB"][1] == "Train2")
+    {
+        std::cout << "testing.cpp: IntersectionB allocation validated." << std::endl;
+    }
+    else
+    {
+        std::cerr << "testing.cpp: IntersectionB allocation failed." << std::endl;
+    }
+
+    // Print table
+    std::cout << "testing.cpp: Resource table:" << std::endl;
+    resourceTable.printGraph();
+
+    // Release intersections
+    resourceGraph.release("IntersectionA", &train1);
+    resourceGraph.release("IntersectionB", &train1);
+    resourceGraph.release("IntersectionB", &train2);
+
+    // Validate resource table after release
+    resourceTable = resourceGraph.getResourceTable();
+    if (resourceTable["IntersectionA"].empty() && resourceTable["IntersectionB"].empty())
+    {
+        std::cout << "testing.cpp: Resource table cleared successfully after release." << std::endl;
+    }
+    else
+    {
+        std::cerr << "testing.cpp: Resource table not cleared properly after release." << std::endl;
+    }
+}
+
+void train_test()
+{
     // Fork the trains
     std::cout << "testing.cpp: Forking trains now..." << std::endl;
     train_forking();
     // TODO: add check for train behavior
 }
 
+void deadlock_recovery_test()
+{
+    // Create test intersections
+    Intersection intersectionA("IntersectionA", 1); // Mutex
+    Intersection intersectionB("IntersectionB", 1); // Mutex
 
-void deadlock_recovery_test(){
-    //NYI
+    // Create test trains with routes
+    std::vector<Intersection *> route1 = {&intersectionA, &intersectionB};
+    std::vector<Intersection *> route2 = {&intersectionB, &intersectionA};
+    Train train1("Train1", route1);
+    Train train2("Train2", route2);
+
+    // Create resource table
+    map<string, vector<string>> resourceTable;
+    resourceTable["IntersectionA"] = {"Train1"};
+    resourceTable["IntersectionB"] = {"Train2"};
+
+    // Simulate a deadlock cycle
+    // NYI
+
+    // Create train and intersection maps
+    map<string, Train *> trains = {{"Train1", &train1}, {"Train2", &train2}};
+    unordered_map<string, Intersection *> intersections = {{"IntersectionA", &intersectionA}, {"IntersectionB", &intersectionB}};
+
+    // Call deadlockRecovery (once implemented)
+    deadlockRecovery(trains, intersections, resourceTable);
+
+    // Validate results
+    // Check if the deadlock was resolved
+    if (resourceTable["IntersectionA"].empty() || resourceTable["IntersectionB"].empty())
+    {
+        std::cout << "testing.cpp: Deadlock recovery resolved the deadlock." << std::endl;
+    }
+    else
+    {
+        std::cerr << "testing.cpp: Deadlock recovery failed to resolve the deadlock." << std::endl;
+    }
 }
 
-void logging_test() {
+void logging_test()
+{
     writeLog logger;
 
     // Basic message log
@@ -259,14 +401,14 @@ void logging_test() {
     logger.logSimulationComplete();
 }
 
-
-int main(){
+int main()
+{
     generateBaseConfig();
 
     std::cout << "-------------------------------------\n";
     std::cout << "Starting parsing test...\n";
     std::cout << "-------------------------------------\n";
-    
+
     // Conduct parsing test
     parsing_test();
 
@@ -278,11 +420,25 @@ int main(){
     ipc_test();
 
     std::cout << "-------------------------------------\n";
+    std::cout << "Starting allocation table test...\n";
+    std::cout << "-------------------------------------\n";
+
+    // Conduct allocation table test
+    allocation_table_test();
+
+    std::cout << "-------------------------------------\n";
     std::cout << "Starting train test...\n";
     std::cout << "-------------------------------------\n";
 
     // Conduct train test
     train_test();
+
+    std::cout << "-------------------------------------\n";
+    std::cout << "Starting deadlock recovery test...\n";
+    std::cout << "-------------------------------------\n";
+
+    // Conduct deadlock recovery test
+    deadlock_recovery_test();
 
     std::cout << "-------------------------------------\n";
     std::cout << "Starting logging test...\n";
@@ -313,6 +469,6 @@ int main(){
         std::cerr << "Server encountered error." << std::endl;
         return 1;
     }
-    
+
     return 0;
 }
