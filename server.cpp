@@ -66,7 +66,6 @@ int main() {
 
     resourceGraph.printGraph();
 
-    /* TEMPORARY COMMENT OUT: NEEDS TO BE INTEGRATED WITH RESOURCE ALLOCATION GRAPH --------------------------------
     // deadlock detection statement
     if (detectDeadlock(resourceGraph)) {
         std::cout << "Deadlock detected! Handing over to the recovery module...\n";
@@ -84,10 +83,8 @@ int main() {
     
         //deadlockRecovery(trains, intersections, resourceTable);
     }
-    --------------------------------------------------------------------------------------------------------------*/
 }
 
-/* TEMPORARY COMMENT OUT: NEEDS TO BE INTEGRATED WITH RESOURCE ALLOCATION GRAPH --------------------------------
 void handleRequest(int processID) {
     std::unique_lock<std::mutex> lock(mtx);
 
@@ -134,4 +131,3 @@ bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& r
     recursionStack[node] = false;
     return false;
 }
---------------------------------------------------------------------------------------------------------------*/
