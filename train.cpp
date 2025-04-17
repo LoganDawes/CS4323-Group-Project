@@ -64,6 +64,7 @@ void train_behavior(Train* train) {
     writeLog logger;
     
     for (Intersection* intersection : train->route) {
+        while (true){
         msg_request msg;
         msg.mtype = MSG_TYPE_DEFAULT;
         strcpy(msg.command, "ACQUIRE");
@@ -88,6 +89,9 @@ void train_behavior(Train* train) {
             if(strcmp(msg.command, "RELEASED") == 0) {
                 logger.logRelease(train->name, intersection->name);
             }
+
+            break;
+            
         } else if (strcmp(msg.command, "WAIT") == 0){ // If the server sends back a WAIT signal
             logger.logIntersectionFull(train->name, intersection->name);
             std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Maybe adjust this?
@@ -98,4 +102,6 @@ void train_behavior(Train* train) {
         // Depending on testing, we may remove this I just thought it would be good in the place of deadlock prevention - Evelyn
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
+        }
 }
+
