@@ -27,6 +27,7 @@ using namespace std;
 
 //==========================================================================================
 
+
     // TRAIN AND INTERSECTION REQUEST
     void writeLog::logTrainRequest(const std::string& trainLetter, const std::string& intersectionLetter) {
         std::string timestamp = getCurrentTime();
@@ -128,23 +129,38 @@ using namespace std;
 
 //==========================================================================================
 
-
-    std::string writeLog::getCurrentTime() {
-        using namespace std::chrono;
-        using std::chrono::seconds;
-        using std::chrono::microseconds;
-
-
-    //GET TIME
+    void writeLog::getCurrentTime() {
         auto now = system_clock::now();
-        auto duration = now.time_since_epoch();
-        auto sec = duration_cast<seconds>(duration);
-        auto microsec = duration_cast<microseconds>(duration % seconds(1));
+		int hours: sim_time / 3600
+		int minutes: (sim_time % 3600) / 60
+		int seconds: sim_time % 60
 
-        std::time_t t = system_clock::to_time_t(now); //TAKE SYSTEM TIME INTO A VARIABLE
-        std::tm tm = *std::localtime(&t); // BREAKS DOWN TIME INTO HOURS, MINUTES, SECONDS, MS.
+		cout << hours:minutes:seconds
+	}
 
-        std::ostringstream timeStream;
-        timeStream << std::put_time(&tm, "%H:%M:%S") << "." << microsec.count();
-        return timeStream.str();
-    }
+
+//==========================================================================================
+
+
+     //GET TIME - OLD Version
+
+
+     // std::string writeLog::getCurrentTime() {
+     //   using namespace std::chrono;
+     //   using std::chrono::seconds;
+     //   using std::chrono::microseconds;
+
+
+
+     //  auto now = system_clock::now();
+     //   auto duration = now.time_since_epoch();
+     //   auto sec = duration_cast<seconds>(duration);
+     //   auto microsec = duration_cast<microseconds>(duration % seconds(1)); // Not sure if we really need microsec or not.
+
+     //     std::time_t t = system_clock::to_time_t(now); //TAKE SYSTEM TIME INTO A VARIABLE
+     //    std::tm tm = *std::localtime(&t); // BREAKS DOWN TIME INTO HOURS, MINUTES, SECONDS, MS.
+
+     //    std::ostringstream timeStream;
+     //   timeStream << std::put_time(&tm, "%H:%M:%S") << "." << microsec.count();
+     //    return timeStream.str();
+     // }
