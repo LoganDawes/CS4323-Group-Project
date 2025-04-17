@@ -11,8 +11,9 @@ Description:
 #include <thread>
 #include <chrono>
 #include "ipc.hpp"
-#include "logging.hpp"
 #include <cstring>
+#include <iostream>
+#include <vector>
 
 
 using namespace std;
