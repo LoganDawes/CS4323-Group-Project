@@ -9,26 +9,80 @@ Description: Resolving deadlocks by preempting an intersection in one of the act
 
 #include "deadlock_recovery.hpp"
 
-// Resource table is included as an input despite not being defined yet
-vector<string> getDeadlockCycle(const map<string, vector<string>> &resourceTable){
-    // Cycle detection logic
-    return {};
+vector<string> getDeadlockCycle(const map<string, vector<string>> &resourceTable) {
+    unordered_map<string, bool> visited;
+    unordered_map<string, bool> inStack;
+    vector<string> path;
+    vector<string> cycle;
+
+    function<bool(string)> dfs = [&](string node) -> bool {
+        visited[node] = true;
+        inStack[node] = true;
+        path.push_back(node);
+
+        if (resourceTable.find(node) != resourceTable.end()) {
+            for (const string& neighbor : resourceTable.at(node)) {
+                if (!visited[neighbor] && dfs(neighbor)) {
+                    return true;
+                } else if (inStack[neighbor]) {
+                    // Found a cycle: extract cycle from path
+                    auto it = find(path.begin(), path.end(), neighbor);
+                    if (it != path.end()) {
+                        cycle.assign(it, path.end());
+                    }
+                    return true;
+                }
+            }
+        }
+
+        path.pop_back();
+        inStack[node] = false;
+        return false;
+    };
+
+    for (const auto& [node, _] : resourceTable) {
+        if (!visited[node] && dfs(node)) break;
+    }
+
+    return cycle;
 }
 
-void deadlockRecovery(map<string, Train*>& trains, unordered_map<string, Intersection*>& intersections, map<string, vector<string>>& resourceTable){
+void deadlockRecovery(map<string, Train*>& trains,
+    unordered_map<string, Intersection*>& intersections,
+    map<string, vector<string>>& resourceTable) {
+    
+    writeLog logger;
     vector<string> cycle = getDeadlockCycle(resourceTable);
 
-    // Is the cycle empty?
-
-    // Log that the deadlock was detected
-
-    // Preempt the first train in the cycle
+    if (cycle.empty()) {
+        logger.log("SERVER", "Deadlock recovery invoked, but no cycle detected.");
+        return;
+    }
     
-    // Log it
+    string cycleStr;
+    for (size_t i = 0; i < cycle.size(); ++i) {
+        cycleStr += cycle[i];
+        if (i < cycle.size() - 1) cycleStr += " ↔ "; // Shows relationship between trains in a cycle
+    }
 
-    // release the intersection
-    
-    // Log it
-    
-    // Update resource table
+    logger.logDeadlockDetected(cycleStr);
+
+    string preemptTrainName = cycle[0];
+    Train* preemptTrain = trains[preemptTrainName];
+    Intersection* currentIntersection = preemptTrain->current_location;
+
+    if (currentIntersection) {
+        string intersectionName = currentIntersection->name;
+
+        logger.logPreemption(preemptTrainName, intersectionName);
+
+        if (currentIntersection->release(preemptTrain)) {
+            logger.logRelease(preemptTrainName, intersectionName);
+            auto& holders = resourceTable[intersectionName];
+            holders.erase(remove(holders.begin(), holders.end(), preemptTrainName), holders.end());
+        }
+    } else {
+        logger.log("SERVER", "Preempted train has no current location. Skipping release.");
+    }
 }
+
