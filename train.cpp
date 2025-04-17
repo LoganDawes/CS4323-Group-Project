@@ -49,6 +49,11 @@ void train_forking() {
         wait(NULL);
     }
     
+    for (Train* train : train_ptrs) {
+        delete train;
+    }
+    train_ptrs.clear();
+    
     std::cout << "train.cpp: All trains have completed their routes!" << std::endl;
     
     }
