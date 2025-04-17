@@ -49,6 +49,7 @@ void train_forking() {
         wait(NULL);
     }
     
+    //Clean up memory in Parent
     for (Train* train : train_ptrs) {
         delete train;
     }
