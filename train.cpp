@@ -65,43 +65,43 @@ void train_behavior(Train* train) {
     
     for (Intersection* intersection : train->route) {
         while (true){
-        msg_request msg;
-        msg.mtype = MSG_TYPE_DEFAULT;
-        strcpy(msg.command, "ACQUIRE");
-        strcpy(msg.train_name, train->name.c_str());
-        strcpy(msg.intersection, intersection->name.c_str());
+            msg_request msg;
+            msg.mtype = MSG_TYPE_DEFAULT;
+            strcpy(msg.command, "ACQUIRE");
+            strcpy(msg.train_name, train->name.c_str());
+            strcpy(msg.intersection, intersection->name.c_str());
 
-        logger.logTrainRequest(train->name, intersection->name);
-        send_msg(requestQueueId, msg);
-        receive_msg(responseQueueId, msg);
-
-        if(strcmp(msg.command, "GRANT") == 0) { // If the server sends back a GRANT signal
-            logger.logGrant(train->name, intersection->name, "");
-            logger.logProceeding(train->name, intersection->name);
-
-            std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
-
-            // Release (only done if the intersection is granted and after delays)
-            strcpy(msg.command, "RELEASE");
+            logger.logTrainRequest(train->name, intersection->name);
             send_msg(requestQueueId, msg);
-            
             receive_msg(responseQueueId, msg);
-            if(strcmp(msg.command, "RELEASED") == 0) {
-                logger.logRelease(train->name, intersection->name);
-            }
 
-            break;
+            if(strcmp(msg.command, "GRANT") == 0) { // If the server sends back a GRANT signal
+                logger.logGrant(train->name, intersection->name, "");
+                logger.logProceeding(train->name, intersection->name);
+
+                std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
+
+                // Release (only done if the intersection is granted and after delays)
+                strcpy(msg.command, "RELEASE");
+                send_msg(requestQueueId, msg);
             
-        } else if (strcmp(msg.command, "WAIT") == 0){ // If the server sends back a WAIT signal
-            logger.logIntersectionFull(train->name, intersection->name);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Maybe adjust this?
-        } else if (strcmp(msg.command, "DENY") == 0){
-            logger.logLock(train->name, intersection->name);
+                receive_msg(responseQueueId, msg);
+                if(strcmp(msg.command, "RELEASED") == 0) {
+                    logger.logRelease(train->name, intersection->name);
+                }
+
+                break;
+                
+            } else if (strcmp(msg.command, "WAIT") == 0){ // If the server sends back a WAIT signal
+                logger.logIntersectionFull(train->name, intersection->name);
+                std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Maybe adjust this?
+            } else if (strcmp(msg.command, "DENY") == 0){
+                logger.logLock(train->name, intersection->name);
+            }
+            // This is to create a delay before the train tries again
+            // Depending on testing, we may remove this I just thought it would be good in the place of deadlock prevention - Evelyn
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
-        // This is to create a delay before the train tries again
-        // Depending on testing, we may remove this I just thought it would be good in the place of deadlock prevention - Evelyn
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-        }
 }
 
