@@ -54,4 +54,6 @@ class ResourceAllocationGraph {
 int send_msg(int msgid,const msg_request& msg);
 int receive_msg(int msgid, msg_request& msg, long mtype = MSG_TYPE_DEFAULT);
 
+int clear_resources();
+
 #endif
