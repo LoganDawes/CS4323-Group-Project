@@ -17,6 +17,7 @@ std::mutex mtx;
 std::condition_variable cv;
 
 ResourceAllocationGraph resourceGraph;
+
 int main() {
     auto intersections = parseIntersections("intersections.txt"); // parse for intersections
     auto trains = parseTrains("trains.txt", intersections); // parse for train configs
