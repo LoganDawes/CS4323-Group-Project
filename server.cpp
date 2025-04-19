@@ -4,7 +4,7 @@ Author: Gavin Zlatar
 Email: gavin.zlatar@okstate.edu
 Date: 4/12/2025
 
-Description: The 'server.cpp' file creates a multithreaded server that processes requests from child processes while
+Description: The 'server.cpp' file creates a multithreaded server that processes requests from child processes whilst
 checking for deadlocks. Threads handle requests and update a resource graph, which tracks resource dependencies. 
 The program uses this graph to detect deadlocks by looking for cycles. If a deadlock is found, it alerts the user; 
 otherwise, it confirms everything is running smoothly. Mutexes and condition variables ensure threads work safely 
