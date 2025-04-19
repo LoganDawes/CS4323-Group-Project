@@ -11,10 +11,10 @@ Description: Resolving deadlocks by preempting an intersection in one of the act
 
 void deadlockRecovery(map<string, Train*>& trains,
     unordered_map<string, Intersection*>& intersections,
-    map<string, vector<string>>& resourceTable) {
+    map<string, vector<string>>& resourceGraph) {
     
     writeLog logger;
-    vector<string> cycle = getDeadlockCycle(resourceTable);
+
 
     // Check if the cycle is empty
     if (cycle.empty()) {

@@ -15,7 +15,7 @@ using namespace std;
 // Should be called in a for loop in server to initialize the Resource Allocation graph
 void ResourceAllocationGraph::addIntersection(Intersection *intersection)
 {
-    // Adds an interesection to the intersection map in the table
+    // Adds an interesection to the intersection map in the graph
     intersectionMap[intersection->name] = intersection;
 }
 
@@ -48,11 +48,26 @@ void ResourceAllocationGraph::printGraph()
     }
 }
 
+// Adds necessary logic to be able to detect deadlocks, showing what trains are waiting for what intersections.
+unordered_map<string, vector<string>> ResourceAllocationGraph::buildWaitingGraph() {
+    unordered_map<string, vector<string>> graph;
+
+    for (const auto& [iname, intersection] : intersectionMap) {
+        for (Train* train : intersection->waiting_trains) {
+            for (Train* holder : intersection->trains_in_intersection) {
+                graph[train->name].push_back(holder->name);
+            }
+        }
+    }
+
+    return graph;
+}
+
 // Outputs an unordered map of the intersection names and the trains in the intersection.
 // I think this is being used incorrectly.
-unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceTable()
+unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceGraph()
 { 
-    unordered_map<string, vector<string>> table;
+    unordered_map<string, vector<string>> graph;
     for (const auto &pair : intersectionMap)
     {
         vector<string> trains;
@@ -60,7 +75,7 @@ unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceTable(
         {
             trains.push_back(train->name);
         }
-        table[pair.first] = trains;
+        graph[pair.first] = trains;
     }
-    return table;
+    return graph;
 }

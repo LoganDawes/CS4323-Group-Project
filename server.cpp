@@ -16,9 +16,7 @@ and efficiently.
 std::mutex mtx;
 std::condition_variable cv;
 
-// simulated resource graph for detecting deadlocks
 ResourceAllocationGraph resourceGraph;
-
 int main() {
     auto intersections = parseIntersections("intersections.txt");
     auto trains = parseTrains("trains.txt", intersections);
@@ -31,57 +29,46 @@ int main() {
 
     std::cout << "server.cpp: Server started...\n";
     
-    // TODO: receive a resource allocation graph from ipc setup to use in communication between trains
     ipc_setup();
 
     while (true) {
-        receive_msg(requestQueueId, message);
+        receive_msg(requestQueueId, msg);
         
-        string trainName = message.train_name;
-        string intersection = message.intersection;
+        string trainName = msg.train_name;
+        string intersection = msg.intersection;
         Train* train = trains[trainName];
     
-        if (strcmp(message.command, "ACQUIRE") == 0) {
+        if (strcmp(msg.command, "ACQUIRE") == 0) {
             bool success = resourceGraph.acquire(intersection, train);
             if (success) {
                 writeLog::logGrant(trainName, intersection);
-                strcpy(message.command, "GRANT");
+                strcpy(msg.command, "GRANT");
             } else {
                 writeLog::logLock(trainName, intersection);
-                strcpy(message.command, "WAIT");
+                strcpy(msg.command, "WAIT");
             }
-        } else if (strcmp(message.command, "RELEASE") == 0) {
+        } else if (strcmp(msg.command, "RELEASE") == 0) {
             bool success = resourceGraph.release(intersection, train);
             if (success) {
                 writeLog::logRelease(trainName, intersection);
-                strcpy(message.command, "RELEASED");
+                strcpy(msg.command, "RELEASED");
             } else {
                 writeLog::log("SERVER", "Invalid release request.");
-                strcpy(message.command, "DENY");
+                strcpy(msg.command, "DENY");
             }
         }
     
-        send_msg(responseQueueId, message);
+        send_msg(responseQueueId, msg);
     }    
 
     resourceGraph.printGraph();
 
-    // deadlock detection statement
-    if (detectDeadlock(resourceGraph)) {
+    // Deadlock detection statement
+    auto waitingGraph = resourceGraph.buildWaitingGraph();
+    if (detectDeadlock(waitingGraph)) {
         std::cout << "Deadlock detected! Handing over to the recovery module...\n";
-
-        // pass necessary data structures to deadlockRecovery
-
-        std::map<std::string, Train*> trains; // PLACEHOLDER for actual data for data provided by testing
-        std::unordered_map<std::string, Intersection*> intersections; // PLACEHOLDER for intersections for data provided by testing
-    
-        std::map<std::string, std::vector<std::string>> resourceTable;
-        for (const auto& entry : resourceGraph) {
-            resourceTable[std::to_string(entry.first)] = 
-                std::vector<std::string>(entry.second.begin(), entry.second.end());
-        }
-    
-        //deadlockRecovery(trains, intersections, resourceTable);
+        auto graph = resourceGraph.getResourceGraph;
+        deadlockRecovery(trains, intersections, graph);
     }
 }
 
@@ -90,24 +77,23 @@ void handleRequest(int processID) {
 
     std::cout << "Handling request from Process " << processID << "\n";
     // simulate resource request (add to resource graph)
-    resourceGraph[processID] = {processID + 1}; // xxample dependency
+    resourceGraph[processID] = {processID + 1}; // example dependency
     
     cv.notify_all();
 }
 
 
-bool detectDeadlock(const std::map<int, ResourceAllocationGraph& resourceGraph) {
-    std::map<int, bool> visited, recursionStack;
+bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph) {
+    unordered_map<string, bool> visited, recursionStack;
 
-    for (const auto& node : resourceGraph) {
-        visited[node.first] = false;
-        recursionStack[node.first] = false;
+    for (const auto& [node, _] : waitingGraph) {
+        visited[node] = false;
+        recursionStack[node] = false;
     }
 
-    for (const auto& node : resourceGraph) {
-        int processID = node.first;
-        if (!visited[processID]) {
-            if (isCyclicUtil(processID, visited, recursionStack, resourceGraph)) {
+    for (const auto& [node, _] : waitingGraph) {
+        if (!visited[node]) {
+            if (isCyclicUtil(node, visited, recursionStack, waitingGraph)) {
                 return true;
             }
         }
@@ -116,7 +102,7 @@ bool detectDeadlock(const std::map<int, ResourceAllocationGraph& resourceGraph) 
     return false;
 }
 
-bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, ResourceAllocationGraph& graph) {
+bool isCyclicUtil(const node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, ResourceAllocationGraph& graph) {
     visited[node] = true;
     recursionStack[node] = true;
 
