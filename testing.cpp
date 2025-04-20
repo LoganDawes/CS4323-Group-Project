@@ -283,7 +283,7 @@ void allocation_table_test()
 
     // Print table
     std::cout << "testing.cpp: Resource table:" << std::endl;
-    resourceTable.printGraph();
+    resourceGraph.printGraph();
 
     // Release intersections
     resourceGraph.release("IntersectionA", &train1);
@@ -302,16 +302,7 @@ void allocation_table_test()
     }
 }
 
-// Test 4: train forking and behavior test, check that the number of trains is accurate and that they send messages properly.
-void train_test()
-{
-    // Fork the trains
-    std::cout << "testing.cpp: Forking trains now..." << std::endl;
-    train_forking();
-    // TODO: add check for train behavior
-}
-
-// Test 5: deadlock recovery, make a test resourceTable like resource table test, then simulate deadlock cycle to recover
+// Test 4: deadlock recovery, make a test resourceTable like resource table test, then simulate deadlock cycle to recover
 void deadlock_recovery_test()
 {
     // Create test intersections
@@ -324,20 +315,30 @@ void deadlock_recovery_test()
     Train train1("Train1", route1);
     Train train2("Train2", route2);
 
-    // Create resource table
-    map<string, vector<string>> resourceTable;
-    resourceTable["IntersectionA"] = {"Train1"};
-    resourceTable["IntersectionB"] = {"Train2"};
+    // Create resource graph
+    ResourceAllocationGraph resourceGraph;
+    resourceGraph.addIntersection(&intersectionA);
+    resourceGraph.addIntersection(&intersectionB);
 
-    // Simulate a deadlock cycle
-    // NYI
+    resourceGraph.acquire("IntersectionA", &train1); // Train1 acquires IntersectionA
+    resourceGraph.acquire("IntersectionB", &train2); // Train2 acquires IntersectionB
 
-    // Create train and intersection maps
-    map<string, Train *> trains = {{"Train1", &train1}, {"Train2", &train2}};
-    unordered_map<string, Intersection *> intersections = {{"IntersectionA", &intersectionA}, {"IntersectionB", &intersectionB}};
+    // Declare cycle and resource table
+    std::vector<std::string> cycle;
+    unordered_map<string, vector<string>> resourceTable = resourceGraph.getResourceTable();
 
-    // Call deadlockRecovery (once implemented)
-    deadlockRecovery(trains, intersections, resourceTable);
+    // deadlock detection statement
+    if (detectDeadlock(resourceGraph, cycle)) {
+        std::cout << "Deadlock detected! Handing over to the recovery module...\n";
+
+        // pass necessary data structures to deadlockRecovery
+
+        std::map<std::string, Train*> trains;
+        std::unordered_map<std::string, Intersection*> intersections;
+
+        // Call deadlock recovery function
+        deadlockRecovery(trains, resourceTable, cycle, 0);
+    }
 
     // Validate results
     // Check if the deadlock was resolved
@@ -351,7 +352,7 @@ void deadlock_recovery_test()
     }
 }
 
-// Test 6: check that all logs are in correct format in output file
+// Test 5: check that all logs are in correct format in output file
 void logging_test()
 {
     writeLog logger;
@@ -415,13 +416,6 @@ int main()
 
     // Conduct allocation table test
     allocation_table_test();
-
-    std::cout << "-------------------------------------\n";
-    std::cout << "Starting train test...\n";
-    std::cout << "-------------------------------------\n";
-
-    // Conduct train test
-    train_test();
 
     std::cout << "-------------------------------------\n";
     std::cout << "Starting deadlock recovery test...\n";
