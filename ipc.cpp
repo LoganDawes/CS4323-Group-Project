@@ -19,6 +19,11 @@ int requestQueueId = -1;
 int responseQueueId = -1;
 msg_request message;
 
+int shmid = -1; // Shared memory ID
+key_t key_mem = -1; // Key: shared memory
+key_t key_req = -1; // Key: request queue
+key_t key_res = -1; // Key: response queue
+
 // TODO: initialize resource allocation graph and functions
 
 int ipc_setup() {
@@ -53,17 +58,34 @@ int ipc_setup() {
         return -1;
     }
 
+    std::cout << "ipc.cpp: Request Queue ID: " << requestQueueId << std::endl;
+    std::cout << "ipc.cpp: Response Queue ID: " << responseQueueId << std::endl;
+
     return 0;
 }
 
 // Sends message to the queue
 int send_msg(int msgid, const msg_request& msg) {
-    return msgsnd(msgid, &msg, sizeof(msg_request) - sizeof(long), 0);
+    int ret = msgsnd(msgid, &msg, sizeof(msg_request) - sizeof(long), 0);
+    // Check if message was sent successfully
+    if (ret == -1) {
+        perror("ipc.cpp: msgsnd failed");
+    }else {
+        std::cout << "ipc.cpp: Sent message: " << msg.command << " for " << msg.intersection << std::endl;
+    }
+    return ret;
 }
 
 // Receives message from the queue
 int receive_msg(int msgid, msg_request& msg, long mtype) {
-    return msgrcv(msgid, &msg, sizeof(msg_request) - sizeof(long), mtype, 0);
+    int ret = msgrcv(msgid, &msg, sizeof(msg_request) - sizeof(long), mtype, 0);
+    // Check if message was received successfully
+    if (ret == -1) {
+        perror("ipc.cpp: msgsnd failed");
+    }else {
+        std::cout << "ipc.cpp: Received message: " << msg.command << " for " << msg.intersection << std::endl;
+    }
+    return ret;
 }
 
 int clear_resources() {
@@ -76,8 +98,8 @@ int clear_resources() {
     }
 
     // Clear message queue resources
-    requestQueueId = msgctl(key_req, IPC_RMID, &message);
-    responseQueueId = msgctl(key_res, IPC_RMID, &message);
+    requestQueueId = msgctl(key_req, IPC_RMID, nullptr);
+    responseQueueId = msgctl(key_res, IPC_RMID, nullptr);
 
     if (requestQueueId == -1) {
         perror("msgctl (Request removal)");
@@ -89,4 +111,5 @@ int clear_resources() {
         return -1;
     }
     
+    return 0;
 }
