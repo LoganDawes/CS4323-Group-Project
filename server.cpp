@@ -91,7 +91,7 @@ int main() {
 }
 
 void handleRequest(int processID) {
-    // locks shrared resource access
+    // locks shared resource access
     std::unique_lock<std::mutex> lock(mtx);
 
     std::cout << "Handling request from process " << processID << "\n";
@@ -125,12 +125,22 @@ bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph) {
     return false;
 }
 
-bool isCyclicUtil(const node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, ResourceAllocationGraph& graph) {
+bool isCyclicUtil(const string& node, // Current train
+    unorderd_map<string, bool>& visited, // Has the train been seen before?
+    unordered_map<string, bool>& recursionStack, // Call stack path
+    const unordered_map<string, vector<string>>& graph) // waitingGraph - trains and the trains it's waiting on.
+    {
+    /* For context, the 'neighbors' are what we call the trains that the current train is waiting on.
+    So to detect a deadlock the neighbor needs to both already have been visited and in the current recursion path.*/
+
+    // Say the node that we're visiting is visited and add to recursion stack
     visited[node] = true;
     recursionStack[node] = true;
 
     // checking neighbors of the current node
-    for (int neighbor : graph.at(node)) {
+    for (const string& neighbor : graph.at(node)) {
+
+        // If the neighbor hasn't been visited, we run a recursive call on it
         if (!visited[neighbor] && isCyclicUtil(neighbor, visited, recursionStack, graph)) {
             return true;
 
