@@ -53,6 +53,9 @@ bool Intersection::release(Train* train) {
     // Find the specific train in the intersection
     auto found_train = find(trains_in_intersection.begin(), trains_in_intersection.end(), train);
     if(found_train != trains_in_intersection.end()) { // Unlock mutex and update semaphore for intersection
+        trains_in_intersection.erase(found_train);
+        train_count--;
+        
         if(is_mutex){
             pthread_mutex_unlock(&mtx);
             return true;
@@ -74,6 +77,17 @@ bool Intersection::isOpen() { // Returns whether the intersection has an availab
 // Define train class constructor
 Train::Train(string name, vector<Intersection*> route): name(name), route(route) {}
 
+// Trim any non-allowed characters from string
+std::string trim(const std::string& str) {
+    std::string result;
+    for (char c : str) {
+        if (c != ' ' && c != '\t' && c != '\n' && c != '\r') {
+            result += c;
+        }
+    }
+    return result;
+}
+
 // Parse intersections.txt into objects of type Intersection
 unordered_map<string, Intersection*> parseIntersections(const string& filename){
     // Create intersections unordered map so trains can access intersections by name
@@ -89,6 +103,8 @@ unordered_map<string, Intersection*> parseIntersections(const string& filename){
 
         getline(ss, name, ':');
         ss >> capacity;
+
+        name = trim(name);
 
         // Debugging parsing, remove in submission
         cout << "parsing.cpp: Name : " << name << " , Capacity: " << capacity << endl;
@@ -110,10 +126,14 @@ unordered_map<string, Train*> parseTrains(const string& filename, unordered_map<
         string name;
         getline(ss, name, ':');
 
+        name = trim(name);
+
         string intersection;
         vector<Intersection*> route;
 
         while(getline(ss, intersection, ',')){
+            intersection = trim(intersection);
+
             if(intersections.find(intersection) != intersections.end()){
                 route.push_back(intersections[intersection]);
             } else {
