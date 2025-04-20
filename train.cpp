@@ -15,7 +15,6 @@ Description:
 #include <iostream>
 #include <vector>
 
-
 using namespace std;
 
 void train_forking() {
@@ -60,48 +59,90 @@ void train_forking() {
     
     }
 
-void train_behavior(Train* train) {
-    writeLog logger;
-    
-    for (Intersection* intersection : train->route) {
-        while (true){
-        msg_request msg;
-        msg.mtype = MSG_TYPE_DEFAULT;
-        strcpy(msg.command, "ACQUIRE");
-        strcpy(msg.train_name, train->name.c_str());
-        strcpy(msg.intersection, intersection->name.c_str());
+// Mutex for train queues
+pthread_mutex_t responseMutex = PTHREAD_MUTEX_INITIALIZER;
 
-        logger.logTrainRequest(train->name, intersection->name);
-        send_msg(requestQueueId, msg);
-        receive_msg(responseQueueId, msg);
+void train_behavior(Train *train)
+{
+    while (!train->route.empty())
+    {
+        Intersection *intersection = train->route.front();
+        bool acquired = false;
+        bool waitingForResponse = false;
 
-        if(strcmp(msg.command, "GRANT") == 0) { // If the server sends back a GRANT signal
-            logger.logGrant(train->name, intersection->name, "");
-            logger.logProceeding(train->name, intersection->name);
+        while (!acquired)
+        {
+            pthread_mutex_lock(&responseMutex); // Lock the mutex
+            if (!waitingForResponse && !acquired)
+            {
+                // Send ACQUIRE request only if not waiting for a response
+                msg_request msg;
+                msg.mtype = MSG_TYPE_DEFAULT;
+                strcpy(msg.command, "ACQUIRE");
+                strcpy(msg.train_name, train->name.c_str());
+                strcpy(msg.intersection, intersection->name.c_str());
 
-            std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate travel time
+                std::cout << "train.cpp: Sending message: " << msg.command << " for " << msg.intersection << std::endl;
+                send_msg(requestQueueId, msg);
 
-            // Release (only done if the intersection is granted and after delays)
-            strcpy(msg.command, "RELEASE");
-            send_msg(requestQueueId, msg);
-            
-            receive_msg(responseQueueId, msg);
-            if(strcmp(msg.command, "RELEASED") == 0) {
-                logger.logRelease(train->name, intersection->name);
+                waitingForResponse = true;
             }
+            pthread_mutex_unlock(&responseMutex); // Unlock the mutex
 
-            break;
+            // Wait for the server's response
+            msg_request msg;
+            if (receive_msg(responseQueueId, msg) == -1){
+                std::cerr << "train.cpp: Failed to receive message" << std::endl;
+                continue; // Retry if receiving the message fails
+            }
+            std::cout << "train.cpp: Received message: " << msg.command << " for " << msg.intersection << std::endl;
+
+            pthread_mutex_lock(&responseMutex); // Lock the mutex when gets a message
             
-        } else if (strcmp(msg.command, "WAIT") == 0){ // If the server sends back a WAIT signal
-            logger.logIntersectionFull(train->name, intersection->name);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Maybe adjust this?
-        } else if (strcmp(msg.command, "DENY") == 0){
-            logger.logLock(train->name, intersection->name);
-        }
-        // This is to create a delay before the train tries again
-        // Depending on testing, we may remove this I just thought it would be good in the place of deadlock prevention - Evelyn
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-        }
-}
+            if (strcmp(msg.command, "GRANT") == 0)
+            {
+                acquired = true;
+                std::this_thread::sleep_for(std::chrono::seconds(1)); // Simulate travel time
 
+                // Release the intersection after traveling
+                strcpy(msg.command, "RELEASE");
+                strcpy(msg.train_name, train->name.c_str());
+                strcpy(msg.intersection, intersection->name.c_str());
+                send_msg(requestQueueId, msg);
+                std::cout << "train.cpp: Released intersection: " << intersection->name << std::endl;
+
+                // Remove the intersection from the route
+                if (!train->route.empty())
+                {
+                    train->route.erase(train->route.begin());
+                }
+
+                waitingForResponse = false;
+
+                // Update the current intersection
+                if (!train->route.empty())
+                {
+                    intersection = train->route.front();
+                }
+            }
+            else if (strcmp(msg.command, "WAIT") == 0)
+            {
+                // Wait before retrying
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                waitingForResponse = false;
+            }
+            else if (strcmp(msg.command, "DENY") == 0)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                waitingForResponse = false;
+            }
+            pthread_mutex_unlock(&responseMutex); // Unlock the mutex for next route
+        }
+    }
+
+    std::cout << "train.cpp: Train " << train->name << " has completed its route!" << std::endl;
+    msg_request msg;
+    strcpy(msg.command, "COMPLETE");
+    strcpy(msg.train_name, train->name.c_str());
+    send_msg(requestQueueId, msg);
+}

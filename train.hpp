@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <pthread.h>
 #include "parsing.hpp"
 
 void train_forking();
