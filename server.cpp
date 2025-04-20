@@ -19,28 +19,50 @@ std::condition_variable cv;
 std::unordered_map<std::string, std::vector<std::string>> waitingGraph;
 ResourceAllocationGraph resourceGraph;
 
+// sim_time variable
+int sim_time = 0;
+
 int main() {
     auto intersections = parseIntersections("intersections.txt"); // parse for intersections
     auto trains = parseTrains("trains.txt", intersections); // parse for train configs
+
+    // numTrains and completeTrains track route completion
+    int numTrains = trains.size();
+    int completeTrains = 0;
 
     // add intersections to resource graph
     for (auto& [name, inter] : intersections) {
         resourceGraph.addIntersection(inter);
     }
 
-    // fork child for handling trains
-    train_forking();
+    // IPC set up
+    if (ipc_setup()==-1) {
+        std::cerr << "server.cpp: IPC setup failed.\n";
+        return 1;
+    };
 
+    pid_t pid = fork();
+    if (pid < 0) {
+        std::cerr << "server.cpp: Forking failed.\n";
+        return 1;
+
+    // PID 0, child process, goes onto train_forking
+    } else if (pid == 0) {
+        train_forking();
+        exit(0);
+    } 
 
     std::cout << "server.cpp: Server started...\n";
-    
-    // IPC set up
-    ipc_setup();
 
     // main loop
     while (true) {
         // recieve message from request queue
-        receive_msg(requestQueueId, msg);
+        int receive_success = receive_msg(requestQueueId, msg);
+        if (receive_success == -1) {
+            std::cerr << "server.cpp: Failed to receive message.\n";
+            continue; // Retry if receiving the message fails
+        }
+        std::cout << "server.cpp: Received message: " << msg.train_name << msg.command << msg.intersection << std::endl;
         
         // extraction for train name and intersection info
         string trainName = msg.train_name;
@@ -48,16 +70,26 @@ int main() {
         Train* train = trains[trainName];
     
         if (strcmp(msg.command, "ACQUIRE") == 0) {
+            sim_time++;
+            writeLog::logTrainRequest(trainName, intersection, sim_time);
             bool success = resourceGraph.acquire(intersection, train);
             if (success) {
+                // Get semaphore count for logs
+                Intersection* inter = resourceGraph.getIntersection(intersection);
+                if (inter->is_mutex) {
+                    std::string semaphore_count = "";} // Empty string for mutex
+                else {
+                    std::string semaphore_count = std::to_string(inter->capacity - inter->trains_in_intersection.size()); // Semaphore count is capacity - trains in intersection
+                }
+
                 // log success adn grant access
-                writeLog::logGrant(trainName, intersection);
+                writeLog::logGrant(trainName, intersection, semaphore_count, sim_time);
                 strcpy(msg.command, "GRANT");
 
                 waitingGraph.erase(trainName); // Remove the train from the waitingGraph.
             } else {
                 // logfail and instruct to wait
-                writeLog::logLock(trainName, intersection);
+                writeLog::logLock(trainName, intersection, sim_time);
                 strcpy(msg.command, "WAIT");
 
                 // For every train in the intersection, add them to the list of neighbors for the waiting train
@@ -70,32 +102,49 @@ int main() {
             bool success = resourceGraph.release(intersection, train);
             if (success) {
                 // log success, cancel wait, adn confirm release
-                writeLog::logRelease(trainName, intersection);
-                strcpy(msg.command, "RELEASED");
+                writeLog::logRelease(trainName, intersection, sim_time);
+
                 waitingGraph.erase(trainName);
             } else {
                 // log invalid request and deny it
-                writeLog::log("SERVER", "Invalid release request.");
+                writeLog::log("SERVER", "Invalid release request.", sim_time);
                 strcpy(msg.command, "DENY");
+            }
+        } else if (strcmp(msg.command, "COMPLETE") == 0){
+            // Train has completed its route, increment completeTrains
+            completeTrains++;
+
+            // If all trains completed, log simualtion complete then exit
+            if (completeTrains == numTrains) {
+                writeLog::logSimulationComplete(sim_time);
+                std::cout << "All trains have completed their routes.\n";
+                break; // exit the main loop if all trains are complete
             }
         }
     
         // sends response message to train
         send_msg(responseQueueId, msg);
-    }    
 
-    resourceGraph.printGraph();
-    
-    // Deadlock detection statement
-    vector<string> cycle;
-    if (detectDeadlock(waitingGraph, cycle)) {
-        std::cout << "Deadlock detected! Handing over to the recovery module...\n";
-    
-        auto graph = resourceGraph.getResourceGraph();
-        deadlockRecovery(trains, intersections, graph, cycle);
+        resourceGraph.printGraph();
+
+        // Deadlock detection statement
+        if (sim_time % 5 == 0)
+        {
+            vector<string> cycle;
+            if (detectDeadlock(waitingGraph, cycle))
+            {
+                std::cout << "Deadlock detected! Handing over to the recovery module...\n";
+
+                auto graph = resourceGraph.getResourceGraph();
+                deadlockRecovery(trains, graph, cycle, sim_time);
+            }
+        }
     }
+
+    return 0;
 }
 
+/* WENT UNUSED
 void handleRequest(int processID) {
     // locks shared resource access
     std::unique_lock<std::mutex> lock(mtx);
@@ -107,6 +156,7 @@ void handleRequest(int processID) {
     // request process notification
     cv.notify_all();
 }
+*/
 
 
 bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, vector<string>& cycle) {
@@ -133,7 +183,7 @@ bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, v
 }
 
 bool isCyclicUtil(const string& node, // Current train
-    unorderd_map<string, bool>& visited, // Has the train been seen before?
+    unordered_map<string, bool>& visited, // Has the train been seen before?
     unordered_map<string, bool>& recursionStack, // Call stack path
     const unordered_map<string, vector<string>>& graph, // waitingGraph - trains and the trains it's waiting on.
     vector<string>& cycle,

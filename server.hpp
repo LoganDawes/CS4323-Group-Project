@@ -16,8 +16,6 @@
 
 void handleRequest(int processID);
 
-//bool detectDeadlock(ResourceAllocationGraph& graph);
-
 extern std::mutex mtx;
 extern std::condition_variable cv;
 
@@ -25,6 +23,13 @@ extern ResourceAllocationGraph resourceGraph;
 
 int main();
 
-//bool isCyclicUtil(int node, std::map<int, bool>& visited, std::map<int, bool>& recursionStack, const std::map<int, ResourceAllocationGraph&& graph);
+bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, vector<string>& cycle);
+
+bool isCyclicUtil(const string& node,
+    unordered_map<string, bool>& visited,
+    unordered_map<string, bool>& recursionStack,
+    const unordered_map<string, vector<string>>& graph,
+    vector<string>& cycle,
+    unordered_map<string, string>& parent);
 
 #endif
