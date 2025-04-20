@@ -11,39 +11,43 @@ Description: Resolving deadlocks by preempting an intersection in one of the act
 
 void deadlockRecovery(map<string, Train*>& trains,
     unordered_map<string, Intersection*>& intersections,
-    map<string, vector<string>>& resourceGraph) {
+    map<string, vector<string>>& resourceGraph,
+    const vector<string>& cycle) {
     
     writeLog logger;
 
 
     // Check if the cycle is empty
-    if (cycle.empty()) {
+    if (cycle.empty) {
         logger.log("SERVER", "Deadlock recovery invoked, but no cycle detected.");
         return;
     }
     
-    string cycleStr;
+    // Make a string to log that shows the relationships between trains stuck in a cycle
+    string cycleString;
     for (size_t i = 0; i < cycle.size(); ++i) {
-        cycleStr += cycle[i];
-        if (i < cycle.size() - 1) cycleStr += " ↔ "; // Shows relationship between trains in a cycle
+        cycleString += cycle[i];
+        if (i < cycle.size() - 1) cycleString += " : "; 
     }
 
-    logger.logDeadlockDetected(cycleStr);
+    logger.logDeadlockDetected(cycleString);
 
-    // Preempt the first train
-    string preemptTrainName = cycle[0];
-    Train* preemptTrain = trains[preemptTrainName];
-    Intersection* currentIntersection = preemptTrain->current_location;
+    /* Preempting train logic, releases it early so that another train can take its place and 
+    the cycle is broken*/
+    
+    string preemptTrainName = cycle[0]; // Get the name of the first train in the cycle
+    Train* preemptTrain = trains[preemptTrainName]; // Find that train in the vector
+    Intersection* currentIntersection = preemptTrain->current_location; // Find the intersection it's in 
 
-    if (currentIntersection) {
-        string intersectionName = currentIntersection->name;
-
+    if (currentIntersection) { // If the current intersection is indeed a thing
+        string intersectionName = currentIntersection->name; //Store the name of the intersection so it can be logged
+        // Log that you're preempting a train
         logger.logPreemption(preemptTrainName, intersectionName);
 
         // Release intersection
         if (currentIntersection->release(preemptTrain)) {
             logger.logRelease(preemptTrainName, intersectionName);
-            auto& holders = resourceTable[intersectionName];
+            auto& holders = resourceGraph[intersectionName];
             holders.erase(remove(holders.begin(), holders.end(), preemptTrainName), holders.end());
         }
     } else {

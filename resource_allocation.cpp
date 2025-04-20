@@ -20,7 +20,7 @@ void ResourceAllocationGraph::addIntersection(Intersection *intersection)
 }
 
 // Calls the logic to acquire a train in parsing.cpp
-// Is this really necessary and what is it adding to the functionality of our program?
+// Seems redundant but it isolates it and makes it cleaner to call from server
 bool ResourceAllocationGraph::acquire(const string &intersectionName, Train *train)
 {
     return intersectionMap[intersectionName]->acquire(train);
@@ -32,12 +32,16 @@ bool ResourceAllocationGraph::release(const string &intersectionName, Train *tra
     return intersectionMap[intersectionName]->release(train);
 }
 
+Intersection* ResourceAllocationGraph::getIntersection(const std::string& name) {
+    return intersectionMap[name];
+}
+
 void ResourceAllocationGraph::printGraph()
 {
-    // Goes through the key-value pairs in the map, listing out the fields for each intersection, including what trains it holds.
+    // Goes through the key-value pairs in the map, listing out the fields (mutex vs semaphore, trains held, etc)for each intersection
     for (const auto &pair : intersectionMap)
     {
-        const Intersection *inter = pair.second; // pair.second is the value in the key-value pair. It's accessing the actual data.
+        const Intersection *inter = pair.second; // pair.second is the value in the key-value pair. It's accessing the actual data
         cout << inter->name << " | " << (inter->is_mutex ? "Mutex" : "Semaphore")
              << " | " << inter->capacity << " | Held by: ";
         for (const auto &train : inter->trains_in_intersection)
@@ -48,23 +52,7 @@ void ResourceAllocationGraph::printGraph()
     }
 }
 
-// Adds necessary logic to be able to detect deadlocks, showing what trains are waiting for what intersections.
-unordered_map<string, vector<string>> ResourceAllocationGraph::buildWaitingGraph() {
-    unordered_map<string, vector<string>> graph;
-
-    for (const auto& [iname, intersection] : intersectionMap) {
-        for (Train* train : intersection->waiting_trains) {
-            for (Train* holder : intersection->trains_in_intersection) {
-                graph[train->name].push_back(holder->name);
-            }
-        }
-    }
-
-    return graph;
-}
-
 // Outputs an unordered map of the intersection names and the trains in the intersection.
-// I think this is being used incorrectly.
 unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceGraph()
 { 
     unordered_map<string, vector<string>> graph;

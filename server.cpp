@@ -15,7 +15,8 @@ and efficiently.
 
 std::mutex mtx;
 std::condition_variable cv;
-
+// This will track what trains are waiting on what based on requests and grants
+std::unordered_map<std::string, std::vector<std::string>> waitingGraph;
 ResourceAllocationGraph resourceGraph;
 
 int main() {
@@ -53,11 +54,16 @@ int main() {
                 writeLog::logGrant(trainName, intersection);
                 strcpy(msg.command, "GRANT");
 
+                waitingGraph.erase(trainName); // Remove the train from the waitingGraph.
             } else {
                 // logfail and instruct to wait
                 writeLog::logLock(trainName, intersection);
                 strcpy(msg.command, "WAIT");
 
+                // For every train in the intersection, add them to the list of neighbors for the waiting train
+                for(Train* intersectionHolder : resourceGraph.getIntersection(intersection)->trains_in_intersection) {
+                    waitingGraph[trainName].push_back(holder->name);
+                }
             }
 
         } else if (strcmp(msg.command, "RELEASE") == 0) {
@@ -66,7 +72,7 @@ int main() {
                 // log success, cancel wait, adn confirm release
                 writeLog::logRelease(trainName, intersection);
                 strcpy(msg.command, "RELEASED");
-
+                waitingGraph.erase(trainName);
             } else {
                 // log invalid request and deny it
                 writeLog::log("SERVER", "Invalid release request.");
@@ -79,14 +85,14 @@ int main() {
     }    
 
     resourceGraph.printGraph();
-
+    
     // Deadlock detection statement
-    auto waitingGraph = resourceGraph.buildWaitingGraph();
-    if (detectDeadlock(waitingGraph)) {
+    vector<string> cycle;
+    if (detectDeadlock(waitingGraph, cycle)) {
         std::cout << "Deadlock detected! Handing over to the recovery module...\n";
-
-        auto graph = resourceGraph.getResourceGraph;
-        deadlockRecovery(trains, intersections, graph);
+    
+        auto graph = resourceGraph.getResourceGraph();
+        deadlockRecovery(trains, intersections, graph, cycle);
     }
 }
 
@@ -103,9 +109,10 @@ void handleRequest(int processID) {
 }
 
 
-bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph) {
+bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, vector<string>& cycle) {
     
     unordered_map<string, bool> visited, recursionStack;
+    unordered_map<string, string> parent;
 
     // initializes nodes as unvisited outside the stack
     for (const auto& [node, _] : waitingGraph) {
@@ -116,7 +123,7 @@ bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph) {
     // checks the graph for cycles
     for (const auto& [node, _] : waitingGraph) {
         if (!visited[node]) {
-            if (isCyclicUtil(node, visited, recursionStack, waitingGraph)) {
+            if (isCyclicUtil(node, visited, recursionStack, waitingGraph, cycle, parent)) {
                 return true;
             }
         }
@@ -128,8 +135,9 @@ bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph) {
 bool isCyclicUtil(const string& node, // Current train
     unorderd_map<string, bool>& visited, // Has the train been seen before?
     unordered_map<string, bool>& recursionStack, // Call stack path
-    const unordered_map<string, vector<string>>& graph) // waitingGraph - trains and the trains it's waiting on.
-    {
+    const unordered_map<string, vector<string>>& graph, // waitingGraph - trains and the trains it's waiting on.
+    vector<string>& cycle,
+    unordered_map<string, string>& parent) {
     /* For context, the 'neighbors' are what we call the trains that the current train is waiting on.
     So to detect a deadlock the neighbor needs to both already have been visited and in the current recursion path.*/
 
@@ -141,12 +149,21 @@ bool isCyclicUtil(const string& node, // Current train
     for (const string& neighbor : graph.at(node)) {
 
         // If the neighbor hasn't been visited, we run a recursive call on it
-        if (!visited[neighbor] && isCyclicUtil(neighbor, visited, recursionStack, graph)) {
+        if (!visited[neighbor]) {
+            isCyclicUtil(neighbor, visited, recursionStack, graph, cycle, parent);
             return true;
-
         } else if (recursionStack[neighbor]) {
+            // Reconstructt he cycle so it can be sent to the deadlock recovery
+            cycle.clear();
+            string current = node;
+            cycle.push_back(neighbor);
+            while(current != neighbor) {
+                cycle.push_back(current);
+                current = parent[current];
+            }
+            // Reverse it so the cycle is in the correct order for recovery
+            reverse(cycle.begin(), cycle.end());
             return true;
-
         }
     }
 
