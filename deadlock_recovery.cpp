@@ -9,17 +9,16 @@ Description: Resolving deadlocks by preempting an intersection in one of the act
 
 #include "deadlock_recovery.hpp"
 
-void deadlockRecovery(map<string, Train*>& trains,
-    unordered_map<string, Intersection*>& intersections,
-    map<string, vector<string>>& resourceGraph,
-    const vector<string>& cycle) {
+void deadlockRecovery(unordered_map<string, Train*>& trains,
+    unordered_map<string, vector<string>>& resourceGraph,
+    const vector<string>& cycle, int sim_time) {
     
     writeLog logger;
 
 
     // Check if the cycle is empty
     if (cycle.empty) {
-        logger.log("SERVER", "Deadlock recovery invoked, but no cycle detected.");
+        logger.log("SERVER", "Deadlock recovery invoked, but no cycle detected.", sim_time);
         return;
     }
     
@@ -30,7 +29,7 @@ void deadlockRecovery(map<string, Train*>& trains,
         if (i < cycle.size() - 1) cycleString += " : "; 
     }
 
-    logger.logDeadlockDetected(cycleString);
+    logger.logDeadlockDetected(cycleString, sim_time);
 
     /* Preempting train logic, releases it early so that another train can take its place and 
     the cycle is broken*/
@@ -42,16 +41,16 @@ void deadlockRecovery(map<string, Train*>& trains,
     if (currentIntersection) { // If the current intersection is indeed a thing
         string intersectionName = currentIntersection->name; //Store the name of the intersection so it can be logged
         // Log that you're preempting a train
-        logger.logPreemption(preemptTrainName, intersectionName);
+        logger.logPreemption(preemptTrainName, intersectionName, sim_time);
 
         // Release intersection
         if (currentIntersection->release(preemptTrain)) {
-            logger.logRelease(preemptTrainName, intersectionName);
+            logger.logRelease(preemptTrainName, intersectionName, sim_time);
             auto& holders = resourceGraph[intersectionName];
             holders.erase(remove(holders.begin(), holders.end(), preemptTrainName), holders.end());
         }
     } else {
-        logger.log("SERVER", "Preempted train has no current location. Skipping release.");
+        logger.log("SERVER", "Preempted train has no current location. Skipping release.", sim_time);
     }
 }
 
