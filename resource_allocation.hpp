@@ -22,11 +22,12 @@ class ResourceAllocationGraph{
     std::unordered_map<std::string, Intersection *> intersectionMap;
 
     public:
+    Intersection* getIntersection(const string& intersectionName);
     void addIntersection(Intersection* inter);
     bool acquire(const string& intersectionName, Train* train);
     bool release(const string& intersectionName, Train* train);
     void printGraph();
-    unordered_map<string, vector<string>> getResourceTable();
+    unordered_map<string, vector<string>> getResourceGraph() const;
 };
 
 #endif

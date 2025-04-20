@@ -11,6 +11,20 @@ Description: This code creates a resource allocation graph for use in deadlock d
 
 using namespace std;
 
+// Gets an intersection from the intersection map by name
+// Used for "semaphore count" in logs
+Intersection* ResourceAllocationGraph::getIntersection(const string& intersectionName)
+{
+    auto inter = intersectionMap.find(intersectionName);
+    if (inter != intersectionMap.end())
+    {
+        // Return intersection (second value in map)
+        return inter->second;
+    }
+    // Return null if not found
+    return nullptr;
+}
+
 // Populate the graph with pointers to the existing Intersection objects
 // Should be called in a for loop in server to initialize the Resource Allocation graph
 void ResourceAllocationGraph::addIntersection(Intersection *intersection)
@@ -53,7 +67,7 @@ void ResourceAllocationGraph::printGraph()
 }
 
 // Outputs an unordered map of the intersection names and the trains in the intersection.
-unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceGraph()
+unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceGraph() const
 { 
     unordered_map<string, vector<string>> graph;
     for (const auto &pair : intersectionMap)
