@@ -6,24 +6,23 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 
 class writeLog {
 public:
-    static void log(const std::string& source, const std::string& message);
-    static void logTrainRequest(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logGrant(const std::string& trainLetter, const std::string& intersectionLetter, const std::string& additionalMessage = "");
-    static void logLock(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logIntersectionFull(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logDeadlockDetected(const std::string& cycle);
-    static void logRelease(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logPreemption(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logGrantAfterPreemption(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logProceeding(const std::string& trainLetter, const std::string& intersectionLetter);
-    static void logSimulationComplete();
-
-
-private:
-    static std::string getCurrentTime();
+    ~writeLog();
+    static void log(const std::string& source, const std::string& message, int sim_time = 0);
+    static void logTrainRequest(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logGrant(const std::string& trainLetter, const std::string& intersectionLetter, const std::string& additionalMessage = "", int sim_time = 0);
+    static void logLock(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logIntersectionFull(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logDeadlockDetected(const std::string& cycle, int sim_time = 0);
+    static void logRelease(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logPreemption(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logGrantAfterPreemption(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logProceeding(const std::string& trainLetter, const std::string& intersectionLetter, int sim_time = 0);
+    static void logSimulationComplete(int sim_time = 0);
+    static std::string getCurrentTime(int sim_time = 0);
 };
 
 #endif
