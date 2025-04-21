@@ -64,7 +64,7 @@ int main() {
             std::cerr << "server.cpp: Failed to receive message.\n";
             continue; // Retry if receiving the message fails
         }
-        std::cout << "server.cpp: Received message: " << msg.train_name << msg.command << msg.intersection << std::endl;
+        std::cout << "server.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
         
         // extraction for train name and intersection info
         string trainName = msg.train_name;
@@ -124,9 +124,8 @@ int main() {
         }
     
         // sends response message to train
+        std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
         send_msg(responseQueueId, msg);
-
-        resourceGraph.printGraph();
 
         // Deadlock detection statement
         if (sim_time % 5 == 0)

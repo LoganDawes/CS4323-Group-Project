@@ -70,8 +70,6 @@ int send_msg(int msgid, const msg_request& msg) {
     // Check if message was sent successfully
     if (ret == -1) {
         perror("ipc.cpp: msgsnd failed");
-    }else {
-        std::cout << "ipc.cpp: Sent message: " << msg.command << " for " << msg.intersection << std::endl;
     }
     return ret;
 }
@@ -82,8 +80,6 @@ int receive_msg(int msgid, msg_request& msg, long mtype) {
     // Check if message was received successfully
     if (ret == -1) {
         perror("ipc.cpp: msgsnd failed");
-    }else {
-        std::cout << "ipc.cpp: Received message: " << msg.command << " for " << msg.intersection << std::endl;
     }
     return ret;
 }
