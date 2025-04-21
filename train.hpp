@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include "parsing.hpp"
 
-void train_forking();
+void train_forking(unordered_map<std::string, Intersection*>& intersections, unordered_map<std::string, Train*>& trains);
 
 void train_behavior(Train* train);
 #endif
