@@ -55,7 +55,7 @@ int main() {
 
     // PID 0, child process, goes onto train_forking
     } else if (pid == 0) {
-        train_forking();
+        train_forking(intersections, trains);
         exit(0);
     } 
 
