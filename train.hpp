@@ -5,8 +5,9 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include "parsing.hpp"
+#include <unordered_map>
 
-void train_forking(unordered_map<std::string, Intersection*>& intersections, unordered_map<std::string, Train*>& trains);
+void train_forking(std::unordered_map<std::string, Intersection*>& intersections, std::unordered_map<std::string, Train*>& trains);
 
 void train_behavior(Train* train);
 #endif

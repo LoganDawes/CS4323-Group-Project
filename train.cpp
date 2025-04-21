@@ -17,19 +17,16 @@ Description:
 
 using namespace std;
 
-void train_forking(unordered_map<string, Intersection*>& intersections, unordered_map<string, Train*>& trains) {
+void train_forking(std::unordered_map<string, Intersection*>& intersections, std::unordered_map<string, Train*>& trains) {
 
     // Create a vector to store pids for each train's fork
     std::vector<pid_t> train_pids;
 
     std::vector<Train*> train_ptrs;
 
-    int mtype_counter = 1;
-
     // For every train in trains, create a fork
     for(const auto& train_pair : trains){
         Train* train = train_pair.second;  // Access the Train* from the map
-        train->mtype = mtype_counter++;
         train_ptrs.push_back(train);
 
         pid_t pid = fork();
@@ -77,7 +74,7 @@ void train_behavior(Train *train)
             {
                 // Send ACQUIRE request only if not waiting for a response
                 msg_request msg;
-                msg.mtype = train->mtype;
+                msg.mtype = 1;
                 strcpy(msg.command, "ACQUIRE");
                 strcpy(msg.train_name, train->name.c_str());
                 strcpy(msg.intersection, intersection->name.c_str());
@@ -91,7 +88,7 @@ void train_behavior(Train *train)
 
             // Wait for the server's response
             msg_request msg;
-            if (receive_msg(responseQueueId, msg, train->mtype) == -1){
+            if (receive_msg(responseQueueId, msg, 1) == -1){
                 std::cerr << "train.cpp: Failed to receive message" << std::endl;
                 continue; // Retry if receiving the message fails
             }

@@ -42,7 +42,6 @@ public:
     std::string name;
     std::vector<Intersection*> route;
     Intersection* current_location;
-    int mtype;
 
     Train(std::string name, std::vector<Intersection*> route);
 };

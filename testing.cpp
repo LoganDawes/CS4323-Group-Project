@@ -257,7 +257,7 @@ void allocation_table_test()
     resourceGraph.acquire("IntersectionB", &train2);
 
     // Get resource table method: unordered map of vector strings.
-    auto resourceTable = resourceGraph.getResourceTable();
+    auto resourceTable = resourceGraph.getResourceGraph();
 
     // Validate IntersectionA, mutex with 1 train
     if (resourceTable["IntersectionA"].size() == 1 && resourceTable["IntersectionA"][0] == "Train1")
@@ -291,7 +291,7 @@ void allocation_table_test()
     resourceGraph.release("IntersectionB", &train2);
 
     // Validate resource table after release, should be an empty field
-    resourceTable = resourceGraph.getResourceTable();
+    resourceTable = resourceGraph.getResourceGraph();
     if (resourceTable["IntersectionA"].empty() && resourceTable["IntersectionB"].empty())
     {
         std::cout << "testing.cpp: SUCCESS Table emptied" << std::endl;
@@ -302,16 +302,15 @@ void allocation_table_test()
     }
 }
 
-// Test 4: deadlock recovery, make a test resourceTable like resource table test, then simulate deadlock cycle to recover
-void deadlock_recovery_test()
-{
+// Test 4: Deadlock detection and recovery
+void deadlock_recovery_test() {
     // Create test intersections
     Intersection intersectionA("IntersectionA", 1); // Mutex
     Intersection intersectionB("IntersectionB", 1); // Mutex
 
     // Create test trains with routes
-    std::vector<Intersection *> route1 = {&intersectionA, &intersectionB};
-    std::vector<Intersection *> route2 = {&intersectionB, &intersectionA};
+    std::vector<Intersection*> route1 = {&intersectionA, &intersectionB};
+    std::vector<Intersection*> route2 = {&intersectionB, &intersectionA};
     Train train1("Train1", route1);
     Train train2("Train2", route2);
 
@@ -320,35 +319,36 @@ void deadlock_recovery_test()
     resourceGraph.addIntersection(&intersectionA);
     resourceGraph.addIntersection(&intersectionB);
 
-    resourceGraph.acquire("IntersectionA", &train1); // Train1 acquires IntersectionA
-    resourceGraph.acquire("IntersectionB", &train2); // Train2 acquires IntersectionB
+    // Simulate resource acquiring, then make a cycle in wait graph
+    resourceGraph.acquire("IntersectionA", &train1);
+    resourceGraph.acquire("IntersectionB", &train2);
 
-    // Declare cycle and resource table
+    std::unordered_map<std::string, std::vector<std::string>> waitingGraph;
+    waitingGraph["Train1"].push_back("Train2"); // Train1 is waiting for Train2
+    waitingGraph["Train2"].push_back("Train1"); // Train2 is waiting for Train1
+
+    // Detect deadlock using the waiting graph
     std::vector<std::string> cycle;
-    unordered_map<string, vector<string>> resourceTable = resourceGraph.getResourceTable();
+    bool deadlockDetected = detectDeadlock(waitingGraph, cycle);
 
-    // deadlock detection statement
-    if (detectDeadlock(resourceGraph, cycle)) {
-        std::cout << "Deadlock detected! Handing over to the recovery module...\n";
+    if (deadlockDetected) {
+        std::cout << "testing.cpp: SUCCESS Deadlock detected!" << std::endl;
 
-        // pass necessary data structures to deadlockRecovery
+        // Perform deadlock recovery
+        std::unordered_map<std::string, std::vector<std::string>> resourceGraphTable = resourceGraph.getResourceGraph();
+        // Template trains map
+        std::unordered_map<std::string, Train*> trains = {{"Train1", &train1}, {"Train2", &train2}};
+        deadlockRecovery(trains, resourceGraphTable, cycle, 0);
 
-        std::map<std::string, Train*> trains;
-        std::unordered_map<std::string, Intersection*> intersections;
-
-        // Call deadlock recovery function
-        deadlockRecovery(trains, resourceTable, cycle, 0);
-    }
-
-    // Validate results
-    // Check if the deadlock was resolved
-    if (resourceTable["IntersectionA"].empty() || resourceTable["IntersectionB"].empty())
-    {
-        std::cout << "testing.cpp: SUCCESS Deadlock resolution" << std::endl;
-    }
-    else
-    {
-        std::cerr << "testing.cpp: ERROR Deadlock resolution" << std::endl;
+        // Verify that the deadlock is resolved by detecting again
+        bool deadlockResolved = !detectDeadlock(waitingGraph, cycle);
+        if (deadlockResolved) {
+            std::cout << "testing.cpp: SUCCESS Deadlock resolved!" << std::endl;
+        } else {
+            std::cerr << "testing.cpp: ERROR Deadlock not resolved!" << std::endl;
+        }
+    } else {
+        std::cerr << "testing.cpp: ERROR Deadlock not detected!" << std::endl;
     }
 }
 

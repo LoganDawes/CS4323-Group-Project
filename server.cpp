@@ -92,7 +92,7 @@ int main() {
                 writeLog::logGrant(trainName, intersection, semaphore_count, sim_time);
                 strcpy(msg.command, "GRANT");
                 // sends response message to train
-                msg.mtype = train->mtype;
+                msg.mtype = 1;
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
                 send_msg(responseQueueId, msg);
 
@@ -102,7 +102,7 @@ int main() {
                 writeLog::logLock(trainName, intersection, sim_time);
                 strcpy(msg.command, "WAIT");
                 // sends response message to train
-                msg.mtype = train->mtype;
+                msg.mtype = 1;
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
                 send_msg(responseQueueId, msg);
 
@@ -142,7 +142,7 @@ int main() {
                 }
                 strcpy(msg.command, "DENY");
                 // sends response message to train
-                msg.mtype = train->mtype;
+                msg.mtype = 1;
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << msg.mtype << std::endl;
                 send_msg(responseQueueId, msg);
             }

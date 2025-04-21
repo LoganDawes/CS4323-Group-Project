@@ -75,7 +75,7 @@ bool Intersection::isOpen() { // Returns whether the intersection has an availab
 
 
 // Define train class constructor
-Train::Train(string name, vector<Intersection*> route): name(name), route(route), mtype(-1) {}
+Train::Train(string name, vector<Intersection*> route): name(name), route(route) {}
 
 // Trim any non-allowed characters from string
 std::string trim(const std::string& str) {
