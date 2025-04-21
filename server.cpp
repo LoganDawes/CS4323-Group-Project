@@ -157,6 +157,14 @@ int main() {
                 break; // exit the main loop if all trains are complete
             }
         }
+        // JUST FOR TESTING WAITING GRAPH
+        std::cout << "\n[DEBUG] Current waiting graph:\n";
+        for (const auto& [train, deps] : waitingGraph) {
+            std::cout << "  " << train << " is waiting for → ";
+            for (const auto& dep : deps) std::cout << dep << " ";
+            std::cout << "\n";
+        }
+
 
         // Deadlock detection statement
         if (sim_time % 5 == 0)
