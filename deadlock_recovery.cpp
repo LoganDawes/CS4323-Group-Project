@@ -17,7 +17,7 @@ void deadlockRecovery(unordered_map<string, Train*>& trains,
 
 
     // Check if the cycle is empty
-    if (cycle.empty) {
+    if (cycle.empty()) {
         logger.log("SERVER", "Deadlock recovery invoked, but no cycle detected.", sim_time);
         return;
     }

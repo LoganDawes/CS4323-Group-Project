@@ -41,6 +41,8 @@ int main() {
         return 1;
     };
 
+    msg_request msg;
+
     pid_t pid = fork();
     if (pid < 0) {
         std::cerr << "server.cpp: Forking failed.\n";
@@ -76,9 +78,8 @@ int main() {
             if (success) {
                 // Get semaphore count for logs
                 Intersection* inter = resourceGraph.getIntersection(intersection);
-                if (inter->is_mutex) {
-                    std::string semaphore_count = "";} // Empty string for mutex
-                else {
+                std::string semaphore_count = "";
+                if (!inter->is_mutex) {
                     std::string semaphore_count = std::to_string(inter->capacity - inter->trains_in_intersection.size()); // Semaphore count is capacity - trains in intersection
                 }
 
@@ -94,7 +95,7 @@ int main() {
 
                 // For every train in the intersection, add them to the list of neighbors for the waiting train
                 for(Train* intersectionHolder : resourceGraph.getIntersection(intersection)->trains_in_intersection) {
-                    waitingGraph[trainName].push_back(holder->name);
+                    waitingGraph[trainName].push_back(intersectionHolder->name);
                 }
             }
 

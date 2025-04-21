@@ -35,7 +35,7 @@ struct msg_request {
 extern int requestQueueId;
 extern int responseQueueId;
 
-extern msg_request message;
+extern msg_request msg;
 
 int ipc_setup();
 /*
