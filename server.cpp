@@ -119,9 +119,13 @@ int main() {
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
                 send_msg(responseQueueId, msg);
 
-                // For every train in the intersection, add them to the list of neighbors for the waiting train
-                for(Train* intersectionHolder : resourceGraph.getIntersection(intersection)->trains_in_intersection) {
-                    waitingGraph[trainName].push_back(intersectionHolder->name);
+                Intersection* intrsctn = resourceGraph.getIntersection(intersection);
+                if (intersctn && !intrsctn->trains_in_intersection.empty()) {
+                    for (Train* intersectionHolder : intersctn->trains_in_intersection) {
+                        if (intersectionHolder->name != trainName) {
+                            waitingGraph[trainName].push_back(intersectionHolder->name);
+                        }
+                    }
                 }
             }
 
@@ -180,35 +184,18 @@ int main() {
 
 
         // Deadlock detection statement
-        if (sim_time % 5 == 0)
+        vector<string> cycle;
+        if (detectDeadlock(waitingGraph, cycle))
         {
-            vector<string> cycle;
-            if (detectDeadlock(waitingGraph, cycle))
-            {
-                std::cout << "Deadlock detected! Handing over to the recovery module...\n";
+            std::cout << "Deadlock detected! Handing over to the recovery module...\n";
 
-                auto graph = resourceGraph.getResourceGraph();
-                deadlockRecovery(trains, graph, cycle, sim_time);
-            }
+            auto graph = resourceGraph.getResourceGraph();
+            deadlockRecovery(trains, graph, cycle, sim_time);
         }
     }
 
     return 0;
 }
-
-/* WENT UNUSED
-void handleRequest(int processID) {
-    // locks shared resource access
-    std::unique_lock<std::mutex> lock(mtx);
-
-    std::cout << "Handling request from process " << processID << "\n";
-    // simulate resource request (add to resource graph)
-    resourceGraph[processID] = {processID + 1}; // example dependency
-    
-    // request process notification
-    cv.notify_all();
-}
-*/
 
 
 bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, vector<string>& cycle) {
@@ -218,12 +205,14 @@ bool detectDeadlock(const unordered_map<string, vector<string>>& waitingGraph, v
 
     // initializes nodes as unvisited outside the stack
     for (const auto& [node, _] : waitingGraph) {
+        std::cout << "DEBUG: for loop, initializing node";
         visited[node] = false;
         recursionStack[node] = false;
     }
 
     // checks the graph for cycles
     for (const auto& [node, _] : waitingGraph) {
+        std::cout << "DEBUG: for loop, checking graph for cycles";
         if (!visited[node]) {
             if (isCyclicUtil(node, visited, recursionStack, waitingGraph, cycle, parent)) {
                 return true;
