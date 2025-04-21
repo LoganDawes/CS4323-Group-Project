@@ -58,6 +58,26 @@ int ipc_setup() {
         return -1;
     }
 
+    // Clear all messages in the request queue
+    msg_request temp_msg;
+    while (msgrcv(requestQueueId, &temp_msg, sizeof(temp_msg) - sizeof(long), 0, IPC_NOWAIT) != -1) {
+        std::cout << "ipc.cpp: Cleared a message from the request queue.\n";
+    }
+    if (errno != ENOMSG) {
+        perror("ipc.cpp: Error while clearing request queue");
+        return -1;
+    }
+    std::cout << "ipc.cpp: Request queue is now empty.\n";
+
+    // Clear all messages in the response queue
+    while (msgrcv(responseQueueId, &temp_msg, sizeof(temp_msg) - sizeof(long), 0, IPC_NOWAIT) != -1) {
+        std::cout << "ipc.cpp: Cleared a message from the response queue.\n";
+    }
+    if (errno != ENOMSG) {
+        perror("ipc.cpp: Error while clearing response queue");
+        return -1;
+    }
+
     std::cout << "ipc.cpp: Request Queue ID: " << requestQueueId << std::endl;
     std::cout << "ipc.cpp: Response Queue ID: " << responseQueueId << std::endl;
 

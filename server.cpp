@@ -112,9 +112,27 @@ int main() {
                 writeLog::logRelease(trainName, intersection, sim_time);
 
                 waitingGraph.erase(trainName);
-            } else {
+            }
+            else
+            {
+                resourceGraph.printGraph(); // Print the resource graph for debugging
                 // log invalid request and deny it
-                writeLog::log("SERVER", "Invalid release request.", sim_time);
+                Intersection *inter = resourceGraph.getIntersection(intersection);
+                if (!inter)
+                {
+                    writeLog::log("SERVER", "Invalid release request: Intersection not found: " + intersection, sim_time);
+                    std::cerr << "server.cpp: Invalid release request: Intersection not found: " << intersection << std::endl;
+                }
+                else if (std::find(inter->trains_in_intersection.begin(), inter->trains_in_intersection.end(), train) == inter->trains_in_intersection.end())
+                {
+                    writeLog::log("SERVER", "Invalid release request: Train " + trainName + " not found in intersection " + intersection, sim_time);
+                    std::cerr << "server.cpp: Invalid release request: Train " << trainName << " not found in intersection " << intersection << std::endl;
+                }
+                else
+                {
+                    writeLog::log("SERVER", "Invalid release request: Unknown error for train " + trainName + " at intersection " + intersection, sim_time);
+                    std::cerr << "server.cpp: Invalid release request: Unknown error for train " << trainName << " at intersection " << intersection << std::endl;
+                }
                 strcpy(msg.command, "DENY");
                 // sends response message to train
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
