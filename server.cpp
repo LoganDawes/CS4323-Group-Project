@@ -86,12 +86,18 @@ int main() {
                 // log success adn grant access
                 writeLog::logGrant(trainName, intersection, semaphore_count, sim_time);
                 strcpy(msg.command, "GRANT");
+                // sends response message to train
+                std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
+                send_msg(responseQueueId, msg);
 
                 waitingGraph.erase(trainName); // Remove the train from the waitingGraph.
             } else {
                 // logfail and instruct to wait
                 writeLog::logLock(trainName, intersection, sim_time);
                 strcpy(msg.command, "WAIT");
+                // sends response message to train
+                std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
+                send_msg(responseQueueId, msg);
 
                 // For every train in the intersection, add them to the list of neighbors for the waiting train
                 for(Train* intersectionHolder : resourceGraph.getIntersection(intersection)->trains_in_intersection) {
@@ -110,6 +116,9 @@ int main() {
                 // log invalid request and deny it
                 writeLog::log("SERVER", "Invalid release request.", sim_time);
                 strcpy(msg.command, "DENY");
+                // sends response message to train
+                std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
+                send_msg(responseQueueId, msg);
             }
         } else if (strcmp(msg.command, "COMPLETE") == 0){
             // Train has completed its route, increment completeTrains
@@ -122,10 +131,6 @@ int main() {
                 break; // exit the main loop if all trains are complete
             }
         }
-    
-        // sends response message to train
-        std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
-        send_msg(responseQueueId, msg);
 
         // Deadlock detection statement
         if (sim_time % 5 == 0)
