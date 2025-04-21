@@ -67,3 +67,7 @@ unordered_map<string, vector<string>> ResourceAllocationGraph::getResourceGraph(
     }
     return graph;
 }
+
+void ResourceAllocationGraph::clear() {
+    intersectionMap.clear();
+}

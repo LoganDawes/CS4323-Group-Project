@@ -28,6 +28,7 @@ class ResourceAllocationGraph{
     bool release(const string& intersectionName, Train* train);
     void printGraph();
     unordered_map<string, vector<string>> getResourceGraph() const;
+    void clear();
 };
 
 #endif
