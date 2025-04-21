@@ -92,7 +92,7 @@ void train_behavior(Train *train)
             // Wait for the server's response
             msg_request msg;
             long my_type = getpid();
-            if (receive_msg(responseQueueId, msg) == -1){
+            if (receive_msg(responseQueueId, msg, my_type) == -1){
                 std::cerr << "train.cpp: Failed to receive message" << std::endl;
                 continue; // Retry if receiving the message fails
             }
