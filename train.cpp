@@ -95,45 +95,45 @@ void train_behavior(Train *train)
                 std::cerr << "train.cpp: Failed to receive message" << std::endl;
                 continue; // Retry if receiving the message fails
             }
-            std::cout << "train.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl;
+            std::cout << "train.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << std::endl << std::flush;
 
             pthread_mutex_lock(&responseMutex); // Lock the mutex when gets a message
             
             if (strcmp(msg.command, "GRANT") == 0)
             {
                 acquired = true;
-                std::this_thread::sleep_for(std::chrono::seconds(1)); // Simulate travel time
+
+                struct timespec req = {1, 0};
+                nanosleep(&req, nullptr); // Simulate travel time
 
                 // Release the intersection after traveling
                 strcpy(msg.command, "RELEASE");
                 strcpy(msg.train_name, train->name.c_str());
                 strcpy(msg.intersection, intersection->name.c_str());
                 send_msg(requestQueueId, msg);
-                std::cout << "train.cpp: Released intersection: " << intersection->name << std::endl;
+                std::cout << "train.cpp: Released intersection: " << intersection->name << std::endl << std::flush;
 
-                // Remove the intersection from the route
-                if (!train->route.empty())
-                {
-                    train->route.erase(train->route.begin());
-                }
-
-                waitingForResponse = false;
+                train->route.erase(train->route.begin());
 
                 // Update the current intersection
                 if (!train->route.empty())
                 {
                     intersection = train->route.front();
                 }
+
+                waitingForResponse = false;
             }
             else if (strcmp(msg.command, "WAIT") == 0)
             {
                 // Wait before retrying
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                struct timespec req = {0, 500000000};
+                nanosleep(&req, nullptr); // Wait
                 waitingForResponse = false;
             }
             else if (strcmp(msg.command, "DENY") == 0)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                struct timespec req = {0, 500000000};
+                nanosleep(&req, nullptr); // Wait
                 waitingForResponse = false;
             }
             pthread_mutex_unlock(&responseMutex); // Unlock the mutex for next route
