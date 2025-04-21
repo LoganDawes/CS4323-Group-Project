@@ -17,9 +17,7 @@ Description:
 
 using namespace std;
 
-void train_forking() {
-    auto intersections = parseIntersections("intersections.txt");
-    auto trains = parseTrains("trains.txt", intersections);
+void train_forking(unordered_map<string, Intersection*>& intersections, unordered_map<string, Train*>& trains) {
 
     // Create a vector to store pids for each train's fork
     std::vector<pid_t> train_pids;
