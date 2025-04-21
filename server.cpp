@@ -55,7 +55,7 @@ int main() {
 
     // PID 0, child process, goes onto train_forking
     } else if (pid == 0) {
-        train_forking(intersections, trains);
+        train_forking();
         exit(0);
     } 
 
@@ -69,7 +69,7 @@ int main() {
             std::cerr << "server.cpp: Failed to receive message.\n";
             continue; // Retry if receiving the message fails
         }
-        std::cout << "server.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
+        std::cout << "server.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " <<  std::endl;
         
         // extraction for train name and intersection info
         string trainName = msg.train_name;
@@ -88,7 +88,7 @@ int main() {
                     std::string semaphore_count = std::to_string(inter->capacity - inter->trains_in_intersection.size()); // Semaphore count is capacity - trains in intersection
                 }
 
-                // log success adn grant access
+                // Log success and grant access
                 writeLog::logGrant(trainName, intersection, semaphore_count, sim_time);
                 strcpy(msg.command, "GRANT");
                 // sends response message to train
@@ -98,7 +98,7 @@ int main() {
 
                 waitingGraph.erase(trainName); // Remove the train from the waitingGraph.
             } else {
-                // logfail and instruct to wait
+                // log fail and instruct to wait
                 writeLog::logLock(trainName, intersection, sim_time);
                 strcpy(msg.command, "WAIT");
                 // sends response message to train
