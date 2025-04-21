@@ -26,12 +26,9 @@ void train_forking() {
 
     std::vector<Train*> train_ptrs;
 
-    int mtype_counter = 1;
-
     // For every train in trains, create a fork
     for(const auto& train_pair : trains){
         Train* train = train_pair.second;  // Access the Train* from the map
-        train->mtype = mtype_counter++;
         train_ptrs.push_back(train);
 
         pid_t pid = fork();
@@ -79,12 +76,11 @@ void train_behavior(Train *train)
             {
                 // Send ACQUIRE request only if not waiting for a response
                 msg_request msg;
-                msg.mtype = train->mtype;
                 strcpy(msg.command, "ACQUIRE");
                 strcpy(msg.train_name, train->name.c_str());
                 strcpy(msg.intersection, intersection->name.c_str());
 
-                std::cout << "train.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
+                std::cout << "train.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << std::endl;
                 send_msg(requestQueueId, msg);
 
                 waitingForResponse = true;
@@ -93,11 +89,11 @@ void train_behavior(Train *train)
 
             // Wait for the server's response
             msg_request msg;
-            if (receive_msg(responseQueueId, msg, train->mtype) == -1){
+            if (receive_msg(responseQueueId, msg) == -1){
                 std::cerr << "train.cpp: Failed to receive message" << std::endl;
                 continue; // Retry if receiving the message fails
             }
-            std::cout << "train.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
+            std::cout << "train.cpp: Received message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << std::endl;
 
             pthread_mutex_lock(&responseMutex); // Lock the mutex when gets a message
             
