@@ -31,6 +31,19 @@ int main() {
     auto intersections = parseIntersections("intersections.txt"); // parse for intersections
     auto trains = parseTrains("trains.txt", intersections); // parse for train configs
 
+    std::ostringstream intersectionLog;
+    intersectionLog << "Initialized intersections:\n";
+
+    // Format log like project document
+    for (const auto &[name, inter] : intersections)
+    {
+        intersectionLog << "- " << name << " (";
+        intersectionLog << (inter->is_mutex ? "Mutex" : "Semaphore") << ", Capacity=" << inter->capacity << ")\n";
+    }
+
+    // Log the initialized intersections
+    writeLog::log("SERVER", intersectionLog.str(), sim_time);
+
     // numTrains and completeTrains track route completion
     int numTrains = trains.size();
     int completeTrains = 0;
