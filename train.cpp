@@ -77,7 +77,7 @@ void train_behavior(Train *train)
             {
                 // Send ACQUIRE request only if not waiting for a response
                 msg_request msg;
-                msg.mtype = MSG_TYPE_DEFAULT;
+                msg.mtype = 1;
                 strcpy(msg.command, "ACQUIRE");
                 strcpy(msg.train_name, train->name.c_str());
                 strcpy(msg.intersection, intersection->name.c_str());
@@ -91,6 +91,7 @@ void train_behavior(Train *train)
 
             // Wait for the server's response
             msg_request msg;
+            long my_type = getpid();
             if (receive_msg(responseQueueId, msg) == -1){
                 std::cerr << "train.cpp: Failed to receive message" << std::endl;
                 continue; // Retry if receiving the message fails
