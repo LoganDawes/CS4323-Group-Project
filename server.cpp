@@ -104,6 +104,7 @@ int main() {
                 // sends response message to train
                 msg.mtype = train->mtype;
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
+                msg.mtype = train->pid;
                 send_msg(responseQueueId, msg);
 
                 // For every train in the intersection, add them to the list of neighbors for the waiting train
