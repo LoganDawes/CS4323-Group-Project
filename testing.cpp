@@ -329,6 +329,15 @@ void deadlock_recovery_test() {
 
     // Detect deadlock using the waiting graph
     std::vector<std::string> cycle;
+
+    // JUST FOR TESTING WAITING GRAPH
+    std::cout << "\n[DEBUG] Current waiting graph:\n";
+    for (const auto& [train, deps] : waitingGraph) {
+        std::cout << "  " << train << " is waiting for → ";
+        for (const auto& dep : deps) std::cout << dep << " ";
+        std::cout << "\n";
+    }
+
     bool deadlockDetected = detectDeadlock(waitingGraph, cycle);
 
     if (deadlockDetected) {
