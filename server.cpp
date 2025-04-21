@@ -231,8 +231,12 @@ bool isCyclicUtil(const string& node, // Current train
 
         // If the neighbor hasn't been visited, we run a recursive call on it
         if (!visited[neighbor]) {
-            isCyclicUtil(neighbor, visited, recursionStack, graph, cycle, parent);
-            return true;
+            parent[neighbor] = node;
+            if(isCyclicUtil(neighbor, visited, recursionStack, graph, cycle, parent)){
+                // Log that a cycle was detected
+                std::cout << "cycle detected!";
+                return true;
+            }
         } else if (recursionStack[neighbor]) {
             // Reconstructt he cycle so it can be sent to the deadlock recovery
             cycle.clear();
