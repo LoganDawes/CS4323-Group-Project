@@ -104,11 +104,6 @@ int main() {
 <<<<<<< HEAD
 <<<<<<< HEAD
                 std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << std::endl;
-=======
-                msg.mtype = train->mtype;
-                std::cout << "server.cpp: Sending message: " << msg.train_name << " " << msg.command << " " << msg.intersection << " " << msg.mtype << std::endl;
-                msg.mtype = train->pid;
->>>>>>> 821450ccb11b913a59d8aa9ec96c71125b9bb212
                 send_msg(responseQueueId, msg);
 
                 // For every train in the intersection, add them to the list of neighbors for the waiting train
